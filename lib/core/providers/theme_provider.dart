@@ -25,18 +25,16 @@ class ThemeProvider extends ChangeNotifier {
   }
 
   /// Đổi theme và lưu vào DataManager
-  void setTheme(String themeId) {
+  Future<void> setTheme(String themeId) async {
     final newTheme = AppThemes.getById(themeId);
     if (newTheme.id == _currentTheme.id) return;
 
     _currentTheme = newTheme;
-    
-    // Save to DataManager
+    notifyListeners();
+
     final settings = DataManager().userSettings;
-    DataManager().saveUserSettings(
+    await DataManager().saveUserSettings(
       settings.copyWith(currentTheme: themeId),
     );
-
-    notifyListeners();
   }
 }
