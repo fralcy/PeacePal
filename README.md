@@ -96,11 +96,11 @@ Download the APK from the [GitHub Releases](https://github.com/fralcy/peacepal/r
 git clone https://github.com/fralcy/peacepal.git
 cd stress_relief_app
 flutter pub get
-flutter pub run build_runner build
+dart run build_runner build
 flutter run
 ```
 
-**Requirements:** Flutter SDK (stable), Dart 3.9.2+, Firebase project (for cloud features).
+**Requirements:** Flutter 3.9.2+, Firebase project (for cloud features).
 
 ---
 

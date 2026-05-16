@@ -96,11 +96,11 @@ Tải APK từ trang [GitHub Releases](https://github.com/fralcy/peacepal/releas
 git clone https://github.com/fralcy/peacepal.git
 cd stress_relief_app
 flutter pub get
-flutter pub run build_runner build
+dart run build_runner build
 flutter run
 ```
 
-**Yêu cầu:** Flutter SDK (stable), Dart 3.9.2+, Firebase project (cho tính năng đám mây).
+**Yêu cầu:** Flutter 3.9.2+, Firebase project (cho tính năng đám mây).
 
 ---
 
