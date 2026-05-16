@@ -472,7 +472,7 @@ class DataManager {
   Future<void> resetSyncTimestamps(DateTime time) async {
     final current = userProfile;
     final updated = current.copyWith(lastSyncedAt: time, lastUpdatedAt: time);
-    await _userProfileHive.put(current.id, updated);
+    await _userProfileHive.put('current', updated);
   }
 
   // Helper method to update lastUpdatedAt timestamp when any data changes
