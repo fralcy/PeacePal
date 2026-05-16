@@ -79,22 +79,28 @@ class AppLocalizationsEn extends AppLocalizations {
   String currentWillBeReplaced(String type) => 'Current $type will be replaced.';
   
   @override
-  String get templateHeart => 'Heart';
-  
-  @override
-  String get templateStar => 'Star';
-  
-  @override
   String get templateFlower => 'Flower';
-  
+
   @override
   String get templateApple => 'Apple';
-  
+
   @override
   String get templateTree => 'Tree';
-  
+
   @override
   String get templateCat => 'Cat';
+
+  @override
+  String get templateSun => 'Sun';
+
+  @override
+  String get templateButterfly => 'Butterfly';
+
+  @override
+  String get templateFish => 'Fish';
+
+  @override
+  String get templateHouse => 'House';
   
   @override
   String get settings => 'Settings';

@@ -38,12 +38,14 @@ abstract class AppLocalizations {
   String currentWillBeReplaced(String type);
   
   // Template names (localized)
-  String get templateHeart;
-  String get templateStar;
   String get templateFlower;
   String get templateApple;
   String get templateTree;
   String get templateCat;
+  String get templateSun;
+  String get templateButterfly;
+  String get templateFish;
+  String get templateHouse;
   
   // Settings
   String get settings;

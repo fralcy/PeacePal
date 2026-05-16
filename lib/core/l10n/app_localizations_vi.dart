@@ -81,22 +81,28 @@ class AppLocalizationsVi extends AppLocalizations {
   }
   
   @override
-  String get templateHeart => 'Trái tim';
-  
-  @override
-  String get templateStar => 'Ngôi sao';
-  
-  @override
   String get templateFlower => 'Hoa';
-  
+
   @override
   String get templateApple => 'Quả táo';
-  
+
   @override
   String get templateTree => 'Cây';
-  
+
   @override
   String get templateCat => 'Mèo';
+
+  @override
+  String get templateSun => 'Mặt trời';
+
+  @override
+  String get templateButterfly => 'Bướm';
+
+  @override
+  String get templateFish => 'Cá';
+
+  @override
+  String get templateHouse => 'Ngôi nhà';
   
   @override
   String get settings => 'Cài đặt';
