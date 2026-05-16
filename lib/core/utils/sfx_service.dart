@@ -1,117 +1,68 @@
-import 'package:audioplayers/audioplayers.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter_soloud/flutter_soloud.dart';
 import 'data_manager.dart';
 
-/// Service quản lý sound effects cho toàn app
-/// Singleton để đảm bảo chỉ có 1 instance
+/// Service quản lý sound effects cho toàn app.
+/// Singleton — pre-load toàn bộ file SFX vào memory khi init.
 class SfxService {
   static final SfxService _instance = SfxService._internal();
   factory SfxService() => _instance;
   SfxService._internal();
 
-  final AudioPlayer _sfxPlayer = AudioPlayer();
+  final Map<String, AudioSource> _handles = {};
   bool _isEnabled = true;
-  double _volume = 0.7; // Default 70%
+  double _volume = 0.7;
 
-  /// Map SFX types sang file paths
   static const Map<String, String> _sfxAssets = {
-    'button_click': 'audio/sfx/button_click.mp3',
-    'task_complete': 'audio/sfx/task_complete.mp3',
-    'reward': 'audio/sfx/reward.mp3',
-    'error': 'audio/sfx/error.mp3',
-    'page_transition': 'audio/sfx/page_transition.mp3',
-    // Rock Balancing LAN game
-    'celebration': 'audio/sfx/celebration.mp3',
-    'rock_hit': 'audio/sfx/rock_hit.mp3',
-    'rock_land': 'audio/sfx/rock_land.mp3',
+    'button_click': 'assets/audio/sfx/button_click.mp3',
+    'task_complete': 'assets/audio/sfx/task_complete.mp3',
+    'reward': 'assets/audio/sfx/reward.mp3',
+    'error': 'assets/audio/sfx/error.mp3',
+    'page_transition': 'assets/audio/sfx/page_transition.mp3',
+    'celebration': 'assets/audio/sfx/celebration.mp3',
+    'rock_hit': 'assets/audio/sfx/rock_hit.mp3',
+    'rock_land': 'assets/audio/sfx/rock_land.mp3',
   };
 
-  /// Khởi tạo service
   Future<void> initialize() async {
-    // Load settings
     final settings = DataManager().userSettings;
     _isEnabled = settings.sfxEnabled;
-    _volume = settings.sfxVolume / 100.0; // Convert 0-100 to 0.0-1.0
+    _volume = settings.sfxVolume / 100.0;
 
-    // Set release mode để SFX chơi một lần rồi stop
-    await _sfxPlayer.setReleaseMode(ReleaseMode.stop);
-
-    // Set audio context để không tranh giành audio focus với BGM (không hỗ trợ trên web)
-    if (!kIsWeb) {
-      await _sfxPlayer.setAudioContext(AudioContext(
-        iOS: AudioContextIOS(
-          category: AVAudioSessionCategory.playback,
-          options: {
-            AVAudioSessionOptions.mixWithOthers,
-          },
-        ),
-        android: AudioContextAndroid(
-          isSpeakerphoneOn: false,
-          stayAwake: false,
-          contentType: AndroidContentType.sonification,
-          usageType: AndroidUsageType.assistanceAccessibility,
-          audioFocus: AndroidAudioFocus.gainTransientMayDuck, // Short audio focus for SFX
-        ),
-      ));
+    for (final entry in _sfxAssets.entries) {
+      _handles[entry.key] =
+          await SoLoud.instance.loadAsset(entry.value);
     }
   }
 
-  /// Chơi một sound effect
-  Future<void> play(String sfxName) async {
-    if (!_isEnabled) return;
-
-    final assetPath = _sfxAssets[sfxName];
-    if (assetPath != null) {
-      await _sfxPlayer.stop(); // Stop SFX trước đó (nếu có)
-      await _sfxPlayer.play(AssetSource(assetPath), volume: _volume);
-    }
+  void _play(String key) {
+    if (!_isEnabled || _volume == 0) return;
+    final source = _handles[key];
+    if (source != null) SoLoud.instance.play(source, volume: _volume);
   }
 
-  // ===== Shortcut methods cho từng loại SFX =====
-  
-  /// Button click - Dùng nhiều nhất
-  Future<void> buttonClick() => play('button_click');
+  void buttonClick() => _play('button_click');
+  void taskComplete() => _play('task_complete');
+  void reward() => _play('reward');
+  void error() => _play('error');
+  void pageTransition() => _play('page_transition');
+  void celebration() => _play('celebration');
+  void rockHit() => _play('rock_hit');
+  void rockLand() => _play('rock_land');
 
-  /// Task complete - Hoàn thành công việc ✓
-  Future<void> taskComplete() => play('task_complete');
+  void changeVolume(int volume) => _volume = volume / 100.0;
 
-  /// Reward - Nhận điểm/thành tựu 🎉
-  Future<void> reward() => play('reward');
+  void setEnabled(bool enabled) => _isEnabled = enabled;
 
-  /// Error - Thao tác sai/cảnh báo ⚠️
-  Future<void> error() => play('error');
-
-  /// Page transition - Chuyển màn hình 🔄
-  Future<void> pageTransition() => play('page_transition');
-
-  /// Celebration - Vượt kỷ lục (rock balancing) 🎉
-  Future<void> celebration() => play('celebration');
-
-  /// Rock hit - Hai viên đá va chạm nhau
-  Future<void> rockHit() => play('rock_hit');
-
-  /// Rock land - Đá chạm đất
-  Future<void> rockLand() => play('rock_land');
-
-  /// Đổi volume (0-100)
-  void changeVolume(int volume) {
-    _volume = volume / 100.0; // Convert 0-100 to 0.0-1.0
-  }
-
-  /// Bật/tắt SFX
-  void setEnabled(bool enabled) {
-    _isEnabled = enabled;
-  }
-
-  /// Apply sfxEnabled + volume từ DataManager (gọi sau khi sync)
   void applySettings() {
     final settings = DataManager().userSettings;
     setEnabled(settings.sfxEnabled);
     changeVolume(settings.sfxVolume);
   }
 
-  /// Dispose khi app đóng
-  void dispose() {
-    _sfxPlayer.dispose();
+  Future<void> dispose() async {
+    for (final source in _handles.values) {
+      await SoLoud.instance.disposeSource(source);
+    }
+    _handles.clear();
   }
 }

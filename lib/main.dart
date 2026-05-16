@@ -19,6 +19,7 @@ import 'core/providers/achievement_provider.dart';
 import 'core/providers/lan_provider.dart';
 import 'core/providers/game_room_provider.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter_soloud/flutter_soloud.dart';
 import 'firebase_options.dart';
 
 // Import splash screen
@@ -35,6 +36,8 @@ void main() async {
       DeviceOrientation.portraitDown,
     ]);
   }
+
+  await SoLoud.instance.init();
 
   try {
     // Initialize Firebase FIRST (AuthService depends on it)
