@@ -69,8 +69,6 @@ dependencies:
   # WebRTC (PWA-to-PWA LAN)
   flutter_webrtc: ^1.4.1
   firebase_database: ^11.1.0
-  # Animations
-  rive: ^0.13.19
 dev_dependencies:
   flutter_test:
     sdk: flutter
