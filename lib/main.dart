@@ -56,7 +56,8 @@ void main() async {
     debugPrint('[INIT] BgmService OK');
 
     // Init SoLoud engine (SFX + instruments)
-    await SoLoud.instance.init();
+    // bufferSize 1024 → ~22ms latency (default 2048 = ~46ms, quá trễ so với hình)
+    await SoLoud.instance.init(bufferSize: 1024);
 
     // Init SFX Service
     debugPrint('[INIT] Starting SfxService...');
