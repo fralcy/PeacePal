@@ -37,8 +37,6 @@ void main() async {
     ]);
   }
 
-  await SoLoud.instance.init();
-
   try {
     // Initialize Firebase FIRST (AuthService depends on it)
     debugPrint('[INIT] Starting Firebase...');
@@ -56,6 +54,9 @@ void main() async {
     debugPrint('[INIT] Starting BgmService...');
     await BgmService().initialize();
     debugPrint('[INIT] BgmService OK');
+
+    // Init SoLoud engine (SFX + instruments)
+    await SoLoud.instance.init();
 
     // Init SFX Service
     debugPrint('[INIT] Starting SfxService...');
