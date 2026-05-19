@@ -37,6 +37,12 @@ class MascotDialogueService {
     return l10n.getMascotSleepDialogue(variant);
   }
 
+  /// Lấy dialogue an ủi khi người dùng vừa ghi nhật ký tâm trạng thấp
+  String getLowMoodDialogue(AppLocalizations l10n) {
+    final variant = _random.nextBool() ? 0 : 1;
+    return l10n.getMascotLowMoodDialogue(variant);
+  }
+
   /// Lấy biểu cảm ngẫu nhiên (idle hoặc happy)
   MascotExpression getRandomExpression() {
     return _random.nextBool() ? MascotExpression.idle : MascotExpression.happy;

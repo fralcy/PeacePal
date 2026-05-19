@@ -138,6 +138,25 @@ mixin MainScreenMixin<T extends StatefulWidget> on State<T> {
     showClickDialogue();
   }
 
+  void _checkMoodAfterDiary() {
+    final diaries = DataManager().emotionDiaries;
+    if (diaries.isEmpty) return;
+    final latest = diaries.first;
+    final now = DateTime.now();
+    final isToday = latest.date.year == now.year &&
+        latest.date.month == now.month &&
+        latest.date.day == now.day;
+    if (!isToday) return;
+    final positiveScore = (latest.q1 + (6 - latest.q2) + latest.q3) / 3.0;
+    if (positiveScore <= 2.5) {
+      final l10n = AppLocalizations.of(context);
+      showDialogue(
+        dialogueService.getLowMoodDialogue(l10n),
+        MascotExpression.calm,
+      );
+    }
+  }
+
   /// Callback for AchievementsModal navigation — navigate to feature by ID.
   void onAchievementNavigate(String featureId) {
     switch (featureId) {
@@ -169,9 +188,11 @@ mixin MainScreenMixin<T extends StatefulWidget> on State<T> {
           FeatureButton(
             icon: Icons.mood,
             label: l10n.mood,
-            onPressed: () {
+            onPressed: () async {
               SfxService().buttonClick();
-              EmotionDiaryModal.show(context);
+              await EmotionDiaryModal.show(context);
+              if (!mounted) return;
+              _checkMoodAfterDiary();
             },
           ),
           FeatureButton(

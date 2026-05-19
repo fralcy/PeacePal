@@ -937,6 +937,23 @@ class AppLocalizationsVi extends AppLocalizations {
         : 'Tắt màn hình và ngủ ngon nhé 😴';
   }
 
+  @override
+  String getMascotLowMoodDialogue(int variant) {
+    return variant == 0
+        ? 'Hôm nay có vẻ mệt mỏi nhỉ... Mình ở đây cùng bạn nha!'
+        : 'Không sao đâu, hôm nay là ngày khó thôi. Nghỉ ngơi chút nhé~';
+  }
+
+  // Dashboard
+  @override String get dashboard => 'Tổng Quan';
+  @override String get moodTrend => 'Xu hướng tâm trạng';
+  @override String get sleepTrend => 'Xu hướng giấc ngủ';
+  @override String get breathingThisWeek => 'Bài thở tuần này';
+  @override String get sessions => 'buổi';
+  @override String get averageScore => 'Trung bình';
+  @override String get noDataYet => 'Chưa có dữ liệu';
+  @override String get lowMoodSuggestionTitle => 'Thử thư giãn một chút không? 💙';
+
   // Mascot dialogues - Lời thoại khi click (2 biến thể mỗi scene)
   @override
   String getMascotClickDialogue(SceneType scene, int variant) {

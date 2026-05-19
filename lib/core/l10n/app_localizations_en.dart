@@ -935,6 +935,23 @@ class AppLocalizationsEn extends AppLocalizations {
         : 'Put down the screen and sleep well 😴';
   }
 
+  @override
+  String getMascotLowMoodDialogue(int variant) {
+    return variant == 0
+        ? "Rough day, huh? I'm right here with you!"
+        : "It's okay to have hard days. Be gentle with yourself~";
+  }
+
+  // Dashboard
+  @override String get dashboard => 'Overview';
+  @override String get moodTrend => 'Mood trend';
+  @override String get sleepTrend => 'Sleep trend';
+  @override String get breathingThisWeek => 'Breathing this week';
+  @override String get sessions => 'sessions';
+  @override String get averageScore => 'Average';
+  @override String get noDataYet => 'No data yet';
+  @override String get lowMoodSuggestionTitle => 'Want to unwind a little? 💙';
+
   // Mascot dialogues - Click dialogues (2 variants per scene)
   @override
   String getMascotClickDialogue(SceneType scene, int variant) {

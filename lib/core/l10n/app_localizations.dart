@@ -420,6 +420,17 @@ abstract class AppLocalizations {
   String getMascotSceneGreeting(SceneType scene, int variant);
   String getMascotClickDialogue(SceneType scene, int variant);
   String getMascotSleepDialogue(int variant);
+  String getMascotLowMoodDialogue(int variant);
+
+  // Dashboard
+  String get dashboard;
+  String get moodTrend;
+  String get sleepTrend;
+  String get breathingThisWeek;
+  String get sessions;
+  String get averageScore;
+  String get noDataYet;
+  String get lowMoodSuggestionTitle;
 
   // Tutorial - Aquarium
   String get tutorialAquariumTankDesc;

@@ -8,6 +8,7 @@ import '../providers/score_provider.dart';
 import '../utils/data_manager.dart';
 import '../../screens/modals/profile_modal.dart';
 import '../../screens/modals/settings_modal.dart';
+import '../../screens/modals/dashboard_modal.dart';
 
 /// Header cố định ở top màn hình
 ///
@@ -69,6 +70,8 @@ class _AppHeaderState extends State<AppHeader> {
             widget.onHelpPressed!();
           } else if (value == 'settings') {
             SettingsModal.show(context);
+          } else if (value == 'dashboard') {
+            DashboardModal.show(context);
           }
         },
         color: theme.background,
@@ -96,6 +99,16 @@ class _AppHeaderState extends State<AppHeader> {
                 ],
               ),
             ),
+          PopupMenuItem<String>(
+            value: 'dashboard',
+            child: Row(
+              children: [
+                Icon(Icons.bar_chart, color: theme.primary, size: 20),
+                const SizedBox(width: 12),
+                Text(l10n.dashboard, style: AppTypography.bodyLarge(context, color: theme.text)),
+              ],
+            ),
+          ),
           PopupMenuItem<String>(
             value: 'settings',
             child: Row(

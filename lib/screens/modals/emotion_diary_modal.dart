@@ -17,6 +17,8 @@ import '../../core/providers/score_provider.dart';
 import '../../core/providers/achievement_provider.dart';
 import '../../core/widgets/achievement_popup.dart';
 import '../../models/index.dart';
+import 'breathing_exercise_modal.dart';
+import 'garden_modal.dart';
 
 /// Modal quản lý nhật ký cảm xúc
 class EmotionDiaryModal extends StatefulWidget {
@@ -88,6 +90,8 @@ class _EmotionDiaryModalState extends State<EmotionDiaryModal> {
   // Debug mode state
   bool _isDebugMode = false;
   final AuthService _authService = AuthService();
+
+  bool _showSuggestion = false;
 
   @override
   void initState() {
@@ -481,8 +485,58 @@ class _EmotionDiaryModalState extends State<EmotionDiaryModal> {
         if (!isReadOnly) ...[
           const SizedBox(height: 20),
           KeyedSubtree(key: _saveKey, child: _buildSaveButton(l10n, theme)),
+          if (_showSuggestion) _buildSuggestionCard(l10n, theme),
         ],
       ],
+    );
+  }
+
+  Widget _buildSuggestionCard(AppLocalizations l10n, AppTheme theme) {
+    return Container(
+      margin: const EdgeInsets.only(top: 16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: theme.primary.withOpacity(0.08),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: theme.primary.withOpacity(0.25)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            l10n.lowMoodSuggestionTitle,
+            style: AppTypography.bodyMedium(context, color: theme.text),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: AppButton(
+                  label: l10n.breathingExercise,
+                  onPressed: () {
+                    final nav = Navigator.of(context);
+                    final rootCtx = Navigator.of(context, rootNavigator: true).context;
+                    nav.pop();
+                    BreathingExerciseModal.show(rootCtx);
+                  },
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: AppButton(
+                  label: l10n.garden,
+                  onPressed: () {
+                    final nav = Navigator.of(context);
+                    final rootCtx = Navigator.of(context, rootNavigator: true).context;
+                    nav.pop();
+                    GardenModal.show(rootCtx);
+                  },
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 
@@ -670,6 +724,13 @@ class _EmotionDiaryModalState extends State<EmotionDiaryModal> {
     }
 
     if (mounted) setState(() {});
+
+    if (mounted && isSavingToday) {
+      final positiveScore = (newDiary.q1 + (6 - newDiary.q2) + newDiary.q3) / 3.0;
+      if (positiveScore <= 2.5) {
+        setState(() => _showSuggestion = true);
+      }
+    }
   }
 
   // ==================== HELPERS ====================
@@ -692,6 +753,7 @@ class _EmotionDiaryModalState extends State<EmotionDiaryModal> {
         _productivity = null;
         _diaryController.text = '';
       }
+      _showSuggestion = false;
     });
   }
 
