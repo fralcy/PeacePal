@@ -951,6 +951,13 @@ class AppLocalizationsEn extends AppLocalizations {
   @override String get averageScore => 'Average';
   @override String get noDataYet => 'No data yet';
   @override String get lowMoodSuggestionTitle => 'Want to unwind a little? 💙';
+  @override String get insightTitle => 'Insights';
+  @override String insightBreathingPositive(String diff) =>
+      'On breathing days, your mood is $diff pts higher 💙';
+  @override String get insightBreathingNeutral =>
+      'Your mood looks stable — keep tracking!';
+  @override String get insightBreathingEncourage =>
+      'Add breathing sessions to see their effect on your mood!';
 
   // Mascot dialogues - Click dialogues (2 variants per scene)
   @override

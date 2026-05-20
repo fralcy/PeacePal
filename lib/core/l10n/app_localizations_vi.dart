@@ -953,6 +953,13 @@ class AppLocalizationsVi extends AppLocalizations {
   @override String get averageScore => 'Trung bình';
   @override String get noDataYet => 'Chưa có dữ liệu';
   @override String get lowMoodSuggestionTitle => 'Thử thư giãn một chút không? 💙';
+  @override String get insightTitle => 'Nhận xét';
+  @override String insightBreathingPositive(String diff) =>
+      'Những ngày luyện thở, tâm trạng bạn cao hơn $diff điểm 💙';
+  @override String get insightBreathingNeutral =>
+      'Tâm trạng ổn định — tiếp tục theo dõi nhé!';
+  @override String get insightBreathingEncourage =>
+      'Thêm buổi thở để xem ảnh hưởng lên tâm trạng nhé!';
 
   // Mascot dialogues - Lời thoại khi click (2 biến thể mỗi scene)
   @override

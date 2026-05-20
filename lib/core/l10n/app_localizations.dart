@@ -431,6 +431,10 @@ abstract class AppLocalizations {
   String get averageScore;
   String get noDataYet;
   String get lowMoodSuggestionTitle;
+  String get insightTitle;
+  String insightBreathingPositive(String diff);
+  String get insightBreathingNeutral;
+  String get insightBreathingEncourage;
 
   // Tutorial - Aquarium
   String get tutorialAquariumTankDesc;

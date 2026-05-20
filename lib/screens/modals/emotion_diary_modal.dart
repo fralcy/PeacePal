@@ -723,13 +723,13 @@ class _EmotionDiaryModalState extends State<EmotionDiaryModal> {
       }
     }
 
-    if (mounted) setState(() {});
-
-    if (mounted && isSavingToday) {
-      final positiveScore = (newDiary.q1 + (6 - newDiary.q2) + newDiary.q3) / 3.0;
-      if (positiveScore <= 2.5) {
-        setState(() => _showSuggestion = true);
-      }
+    if (mounted) {
+      setState(() {
+        if (isSavingToday) {
+          final positiveScore = (newDiary.q1 + (6 - newDiary.q2) + newDiary.q3) / 3.0;
+          _showSuggestion = positiveScore <= 2.5;
+        }
+      });
     }
   }
 

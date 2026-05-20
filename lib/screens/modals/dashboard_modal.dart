@@ -1,14 +1,20 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_theme.dart';
 import '../../core/constants/app_typography.dart';
 import '../../core/l10n/app_localizations.dart';
+import '../../core/utils/auth_service.dart';
 import '../../core/utils/data_manager.dart';
 import '../../core/widgets/app_card.dart';
 import '../../core/widgets/app_modal.dart';
 import '../../core/widgets/line_graph.dart';
+import '../../models/breathing_session.dart';
+import '../../models/emotion_diary.dart';
+import '../../models/sleep_log.dart';
 
-class DashboardModal extends StatelessWidget {
+class DashboardModal extends StatefulWidget {
   const DashboardModal({super.key});
 
   static bool _isLandscape(Size size) =>
@@ -52,11 +58,73 @@ class DashboardModal extends StatelessWidget {
   }
 
   @override
+  State<DashboardModal> createState() => _DashboardModalState();
+}
+
+class _DashboardModalState extends State<DashboardModal> {
+  bool _isDebugMode = false;
+  final _authService = AuthService();
+
+  @override
+  void initState() {
+    super.initState();
+    _checkDebugMode();
+  }
+
+  Future<void> _checkDebugMode() async {
+    final isDebug = await _authService.isDebugMode;
+    if (mounted) setState(() => _isDebugMode = isDebug);
+  }
+
+  Future<void> _debugFillDashboardData() async {
+    final dm = DataManager();
+    final rng = Random();
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    const exerciseTypes = ['4-7-8', 'box', 'deep_belly', 'calm'];
+
+    // Diary: days 1-13, skip today so user can manually test mascot/suggestion
+    final diaries = List.generate(13, (i) => EmotionDiary(
+      date: today.subtract(Duration(days: i + 1)),
+      q1: rng.nextInt(5) + 1,
+      q2: rng.nextInt(5) + 1,
+      q3: rng.nextInt(5) + 1,
+      notes: '',
+    ))..sort((a, b) => b.date.compareTo(a.date));
+    await dm.saveEmotionDiaries(diaries);
+
+    // Breathing: randomly pick 5-8 days out of 13
+    final days = List.generate(13, (i) => i + 1)..shuffle(rng);
+    final breathingDays = days.take(5 + rng.nextInt(4)).toList();
+    await dm.saveBreathingSessions([
+      for (final d in breathingDays)
+        BreathingSession(
+          date: today.subtract(Duration(days: d)).add(Duration(hours: 18 + rng.nextInt(4))),
+          exerciseType: exerciseTypes[rng.nextInt(exerciseTypes.length)],
+          durationSeconds: 120 + rng.nextInt(181),
+          cyclesCompleted: rng.nextInt(5) + 1,
+        ),
+    ]);
+
+    // Sleep: 8-10 days, only quality needed for chart
+    final sleepCount = 8 + rng.nextInt(3);
+    await dm.saveSleepLogs([
+      for (int d = 1; d <= sleepCount; d++)
+        SleepLog(
+          date: today.subtract(Duration(days: d)),
+          quality: rng.nextInt(5) + 1,
+        ),
+    ]);
+
+    setState(() {});
+  }
+
+  @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final theme = context.theme;
     final size = MediaQuery.of(context).size;
-    final isLandscape = _isLandscape(size);
+    final isLandscape = DashboardModal._isLandscape(size);
 
     final moodCard = AppCard(
       title: l10n.moodTrend,
@@ -70,18 +138,60 @@ class DashboardModal extends StatelessWidget {
       title: l10n.breathingThisWeek,
       content: _BreathingSection(l10n: l10n, theme: theme),
     );
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final insightCutoff = today.subtract(const Duration(days: 13));
+    final recentDiaryCount = DataManager().emotionDiaries.where((d) {
+      final date = DateTime(d.date.year, d.date.month, d.date.day);
+      return !date.isBefore(insightCutoff);
+    }).length;
+    final insightCard = recentDiaryCount >= 3
+        ? AppCard(
+            title: l10n.insightTitle,
+            content: _InsightSection(l10n: l10n, theme: theme),
+          )
+        : null;
+
+    final debugSection = _isDebugMode
+        ? Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const SizedBox(height: 16),
+              Divider(color: theme.border, height: 1, thickness: 1.5),
+              const SizedBox(height: 8),
+              ElevatedButton.icon(
+                onPressed: _debugFillDashboardData,
+                icon: const Icon(Icons.bug_report, size: 18),
+                label: const Text('[DEBUG] Fill test data'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.deepPurple,
+                  foregroundColor: Colors.white,
+                ),
+              ),
+            ],
+          )
+        : null;
 
     if (isLandscape) {
       return Padding(
         padding: const EdgeInsets.symmetric(vertical: 8),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: Column(
           children: [
-            Expanded(child: moodCard),
-            const SizedBox(width: 12),
-            Expanded(child: sleepCard),
-            const SizedBox(width: 12),
-            Expanded(child: breathingCard),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(child: moodCard),
+                const SizedBox(width: 12),
+                Expanded(child: sleepCard),
+                const SizedBox(width: 12),
+                Expanded(child: breathingCard),
+              ],
+            ),
+            if (insightCard != null) ...[
+              const SizedBox(height: 12),
+              insightCard,
+            ],
+            if (debugSection != null) debugSection,
           ],
         ),
       );
@@ -96,6 +206,11 @@ class DashboardModal extends StatelessWidget {
           sleepCard,
           const SizedBox(height: 12),
           breathingCard,
+          if (insightCard != null) ...[
+            const SizedBox(height: 12),
+            insightCard,
+          ],
+          if (debugSection != null) debugSection,
         ],
       ),
     );
@@ -307,6 +422,71 @@ class _StatChip extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _InsightSection extends StatelessWidget {
+  final AppLocalizations l10n;
+  final AppTheme theme;
+
+  const _InsightSection({required this.l10n, required this.theme});
+
+  @override
+  Widget build(BuildContext context) {
+    final diaries = DataManager().emotionDiaries;
+    final sessions = DataManager().breathingSessions;
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final cutoff = today.subtract(const Duration(days: 13));
+
+    final diaryMap = <DateTime, double>{};
+    for (final d in diaries) {
+      final date = DateTime(d.date.year, d.date.month, d.date.day);
+      if (!date.isBefore(cutoff)) {
+        diaryMap[date] = (d.q1 + (6 - d.q2) + d.q3) / 3.0;
+      }
+    }
+
+    if (diaryMap.length < 3) return const SizedBox.shrink();
+
+    final breathingDates = sessions
+        .where((s) =>
+            !DateTime(s.date.year, s.date.month, s.date.day).isBefore(cutoff))
+        .map((s) => DateTime(s.date.year, s.date.month, s.date.day))
+        .toSet();
+
+    final breathingScores = diaryMap.entries
+        .where((e) => breathingDates.contains(e.key))
+        .map((e) => e.value)
+        .toList();
+    final nonBreathingScores = diaryMap.entries
+        .where((e) => !breathingDates.contains(e.key))
+        .map((e) => e.value)
+        .toList();
+
+    final String message;
+    if (breathingScores.isEmpty || nonBreathingScores.isEmpty) {
+      message = l10n.insightBreathingEncourage;
+    } else {
+      final breathingAvg =
+          breathingScores.reduce((a, b) => a + b) / breathingScores.length;
+      final nonAvg =
+          nonBreathingScores.reduce((a, b) => a + b) / nonBreathingScores.length;
+      final diff = breathingAvg - nonAvg;
+      if (diff >= 0.3) {
+        message = l10n.insightBreathingPositive('+${diff.toStringAsFixed(1)}');
+      } else {
+        message = l10n.insightBreathingNeutral;
+      }
+    }
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Text(
+        message,
+        style: AppTypography.bodyMedium(context, color: theme.text),
       ),
     );
   }
