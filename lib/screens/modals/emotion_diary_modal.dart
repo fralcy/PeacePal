@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -17,8 +19,16 @@ import '../../core/providers/score_provider.dart';
 import '../../core/providers/achievement_provider.dart';
 import '../../core/widgets/achievement_popup.dart';
 import '../../models/index.dart';
+import 'aquarium_modal.dart';
 import 'breathing_exercise_modal.dart';
+import 'composing_modal.dart';
+import 'drawing_modal.dart';
+import 'firefly_lobby_modal.dart';
 import 'garden_modal.dart';
+import 'paper_ship_lobby_modal.dart';
+import 'rock_balancing_lobby_modal.dart';
+import 'schedule_task_modal.dart';
+import 'sleep_guide_modal.dart';
 
 /// Modal quản lý nhật ký cảm xúc
 class EmotionDiaryModal extends StatefulWidget {
@@ -501,43 +511,59 @@ class _EmotionDiaryModalState extends State<EmotionDiaryModal> {
         border: Border.all(color: theme.primary.withOpacity(0.25)),
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Text(
             l10n.lowMoodSuggestionTitle,
             style: AppTypography.bodyMedium(context, color: theme.text),
           ),
           const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: AppButton(
-                  label: l10n.breathingExercise,
-                  onPressed: () {
-                    final nav = Navigator.of(context);
-                    final rootCtx = Navigator.of(context, rootNavigator: true).context;
-                    nav.pop();
-                    BreathingExerciseModal.show(rootCtx);
-                  },
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: AppButton(
-                  label: l10n.garden,
-                  onPressed: () {
-                    final nav = Navigator.of(context);
-                    final rootCtx = Navigator.of(context, rootNavigator: true).context;
-                    nav.pop();
-                    GardenModal.show(rootCtx);
-                  },
-                ),
-              ),
-            ],
+          AppButton(
+            label: l10n.lowMoodActionBreathing,
+            onPressed: () {
+              final rootCtx = Navigator.of(context, rootNavigator: true).context;
+              Navigator.of(context).pop();
+              BreathingExerciseModal.show(rootCtx);
+            },
+          ),
+          const SizedBox(height: 8),
+          AppButton(
+            label: l10n.lowMoodActionRest,
+            onPressed: () {
+              final rootCtx = Navigator.of(context, rootNavigator: true).context;
+              Navigator.of(context).pop();
+              if (Random().nextBool()) {
+                ScheduleTaskModal.show(rootCtx);
+              } else {
+                SleepGuideModal.show(rootCtx);
+              }
+            },
+          ),
+          const SizedBox(height: 8),
+          AppButton(
+            label: l10n.lowMoodActionPlay,
+            onPressed: () {
+              final rootCtx = Navigator.of(context, rootNavigator: true).context;
+              Navigator.of(context).pop();
+              _openRandomGame(rootCtx);
+            },
           ),
         ],
       ),
     );
+  }
+
+  void _openRandomGame(BuildContext context) {
+    const games = 7;
+    switch (Random().nextInt(games)) {
+      case 0: GardenModal.show(context);
+      case 1: AquariumModal.show(context);
+      case 2: DrawingModal.show(context);
+      case 3: ComposingModal.show(context);
+      case 4: RockBalancingLobbyModal.show(context);
+      case 5: PaperShipLobbyModal.show(context);
+      case 6: FireflyLobbyModal.show(context);
+    }
   }
 
   Widget _buildLikertQuestion({

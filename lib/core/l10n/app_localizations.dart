@@ -431,6 +431,9 @@ abstract class AppLocalizations {
   String get averageScore;
   String get noDataYet;
   String get lowMoodSuggestionTitle;
+  String get lowMoodActionBreathing;
+  String get lowMoodActionRest;
+  String get lowMoodActionPlay;
   String get insightTitle;
   String insightBreathingPositive(String diff);
   String get insightBreathingNeutral;

@@ -953,6 +953,9 @@ class AppLocalizationsVi extends AppLocalizations {
   @override String get averageScore => 'Trung bình';
   @override String get noDataYet => 'Chưa có dữ liệu';
   @override String get lowMoodSuggestionTitle => 'Thử thư giãn một chút không? 💙';
+  @override String get lowMoodActionBreathing => 'Điều hòa cảm xúc ngay';
+  @override String get lowMoodActionRest => 'Nghỉ ngơi & kết thúc ngày';
+  @override String get lowMoodActionPlay => 'Giải trí ngắn';
   @override String get insightTitle => 'Nhận xét';
   @override String insightBreathingPositive(String diff) =>
       'Những ngày luyện thở, tâm trạng bạn cao hơn $diff điểm 💙';

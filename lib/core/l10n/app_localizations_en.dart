@@ -951,6 +951,9 @@ class AppLocalizationsEn extends AppLocalizations {
   @override String get averageScore => 'Average';
   @override String get noDataYet => 'No data yet';
   @override String get lowMoodSuggestionTitle => 'Want to unwind a little? 💙';
+  @override String get lowMoodActionBreathing => 'Regulate emotions now';
+  @override String get lowMoodActionRest => 'Wind down for today';
+  @override String get lowMoodActionPlay => 'Quick distraction';
   @override String get insightTitle => 'Insights';
   @override String insightBreathingPositive(String diff) =>
       'On breathing days, your mood is $diff pts higher 💙';

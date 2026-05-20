@@ -192,6 +192,8 @@ mixin MainScreenMixin<T extends StatefulWidget> on State<T> {
               SfxService().buttonClick();
               await EmotionDiaryModal.show(context);
               if (!mounted) return;
+              await Future.delayed(const Duration(milliseconds: 350));
+              if (!mounted) return;
               _checkMoodAfterDiary();
             },
           ),
