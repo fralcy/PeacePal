@@ -945,7 +945,7 @@ class AppLocalizationsVi extends AppLocalizations {
   }
 
   // Dashboard
-  @override String get dashboard => 'Tổng Quan';
+  @override String get dashboard => 'Thống Kê';
   @override String get moodTrend => 'Xu hướng tâm trạng';
   @override String get sleepTrend => 'Xu hướng giấc ngủ';
   @override String get breathingThisWeek => 'Bài thở tuần này';
@@ -954,15 +954,20 @@ class AppLocalizationsVi extends AppLocalizations {
   @override String get noDataYet => 'Chưa có dữ liệu';
   @override String get lowMoodSuggestionTitle => 'Thử thư giãn một chút không? 💙';
   @override String get lowMoodActionBreathing => 'Điều hòa cảm xúc ngay';
+  @override String get lowMoodActionBreathingDesc => 'Thở 4-7-8 · Thở hộp · Thở bụng sâu';
   @override String get lowMoodActionRest => 'Nghỉ ngơi & kết thúc ngày';
+  @override String get lowMoodActionRestDesc => 'Xem lịch công việc hoặc hướng dẫn giấc ngủ';
   @override String get lowMoodActionPlay => 'Giải trí ngắn';
+  @override String get lowMoodActionPlayDesc => 'Một trò chơi nhỏ để giải tỏa căng thẳng';
   @override String get insightTitle => 'Nhận xét';
-  @override String insightBreathingPositive(String diff) =>
-      'Những ngày luyện thở, tâm trạng bạn cao hơn $diff điểm 💙';
-  @override String get insightBreathingNeutral =>
-      'Tâm trạng ổn định — tiếp tục theo dõi nhé!';
-  @override String get insightBreathingEncourage =>
-      'Thêm buổi thở để xem ảnh hưởng lên tâm trạng nhé!';
+  @override String get insightStressFromPoorSleep =>
+      'Stress thường tăng vào những đêm ngủ thiếu — cải thiện giấc ngủ có thể giúp bạn 😴';
+  @override String get insightGoodMoodFromGoodSleep =>
+      'Những đêm ngủ đủ giấc, tâm trạng bạn tích cực hơn rõ rệt 🌟';
+  @override String get insightStressNotFromSleep =>
+      'Bạn ngủ tốt nhưng vẫn stress — hãy tìm nguyên nhân bên ngoài nhé 💭';
+  @override String get insightKeepItUp =>
+      'Dữ liệu ổn định — tiếp tục duy trì phong độ nhé! 👍';
 
   // Mascot dialogues - Lời thoại khi click (2 biến thể mỗi scene)
   @override

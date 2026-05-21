@@ -66,7 +66,7 @@ class AppAssets {
   static const String mascotIdle = 'assets/images/mascot/idle.webp';
   static const String mascotHappy = 'assets/images/mascot/happy.webp';
   static const String mascotCalm = 'assets/images/mascot/calm.webp';
-  static const String mascotSad = 'assets/images/mascot/sad.webp';
+  static const String mascotSympathy = 'assets/images/mascot/sympathy.webp';
   static const String mascotSleepy = 'assets/images/mascot/sleepy.webp';
   static const String mascotSurprised = 'assets/images/mascot/surprised.webp';
   
@@ -200,7 +200,7 @@ class AppAssets {
     MascotExpression.idle: mascotIdle,
     MascotExpression.happy: mascotHappy,
     MascotExpression.calm: mascotCalm,
-    MascotExpression.sad: mascotSad,
+    MascotExpression.sympathy: mascotSympathy,
     MascotExpression.sleepy: mascotSleepy,
     MascotExpression.surprised: mascotSurprised,
   };
@@ -230,6 +230,12 @@ class AppAssets {
       'assets/images/mascot/sleepy_2.webp',
       'assets/images/mascot/sleepy_3.webp',
       'assets/images/mascot/sleepy_4.webp',
+    ],
+    MascotExpression.sympathy: [
+      mascotSympathy,
+      'assets/images/mascot/sympathy_2.webp',
+      'assets/images/mascot/sympathy_3.webp',
+      'assets/images/mascot/sympathy_4.webp',
     ],
   };
 

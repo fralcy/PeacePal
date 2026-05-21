@@ -147,12 +147,12 @@ mixin MainScreenMixin<T extends StatefulWidget> on State<T> {
         latest.date.month == now.month &&
         latest.date.day == now.day;
     if (!isToday) return;
-    final positiveScore = (latest.q1 + (6 - latest.q2) + latest.q3) / 3.0;
+    final positiveScore = (latest.q1 + latest.q2 + latest.q3) / 3.0;
     if (positiveScore <= 2.5) {
       final l10n = AppLocalizations.of(context);
       showDialogue(
         dialogueService.getLowMoodDialogue(l10n),
-        MascotExpression.calm,
+        MascotExpression.sympathy,
       );
     }
   }

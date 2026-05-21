@@ -432,12 +432,16 @@ abstract class AppLocalizations {
   String get noDataYet;
   String get lowMoodSuggestionTitle;
   String get lowMoodActionBreathing;
+  String get lowMoodActionBreathingDesc;
   String get lowMoodActionRest;
+  String get lowMoodActionRestDesc;
   String get lowMoodActionPlay;
+  String get lowMoodActionPlayDesc;
   String get insightTitle;
-  String insightBreathingPositive(String diff);
-  String get insightBreathingNeutral;
-  String get insightBreathingEncourage;
+  String get insightStressFromPoorSleep;
+  String get insightGoodMoodFromGoodSleep;
+  String get insightStressNotFromSleep;
+  String get insightKeepItUp;
 
   // Tutorial - Aquarium
   String get tutorialAquariumTankDesc;

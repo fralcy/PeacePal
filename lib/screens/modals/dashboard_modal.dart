@@ -130,13 +130,20 @@ class _DashboardModalState extends State<DashboardModal> {
       title: l10n.moodTrend,
       content: _MoodTrendSection(l10n: l10n, theme: theme),
     );
-    final sleepCard = AppCard(
-      title: l10n.sleepTrend,
-      content: _SleepTrendSection(l10n: l10n, theme: theme),
+    final sleepQualityCard = AppCard(
+      title: l10n.sleepQuality,
+      content: _SleepQualitySection(l10n: l10n, theme: theme),
     );
-    final breathingCard = AppCard(
-      title: l10n.breathingThisWeek,
-      content: _BreathingSection(l10n: l10n, theme: theme),
+    final sleepDurationCard = AppCard(
+      title: l10n.sleepDuration,
+      content: _SleepDurationSection(l10n: l10n, theme: theme),
+    );
+    final sleepColumn = Column(
+      children: [
+        sleepQualityCard,
+        const SizedBox(height: 12),
+        sleepDurationCard,
+      ],
     );
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
@@ -182,9 +189,9 @@ class _DashboardModalState extends State<DashboardModal> {
               children: [
                 Expanded(child: moodCard),
                 const SizedBox(width: 12),
-                Expanded(child: sleepCard),
+                Expanded(child: sleepQualityCard),
                 const SizedBox(width: 12),
-                Expanded(child: breathingCard),
+                Expanded(child: sleepDurationCard),
               ],
             ),
             if (insightCard != null) ...[
@@ -203,9 +210,7 @@ class _DashboardModalState extends State<DashboardModal> {
         children: [
           moodCard,
           const SizedBox(height: 12),
-          sleepCard,
-          const SizedBox(height: 12),
-          breathingCard,
+          sleepColumn,
           if (insightCard != null) ...[
             const SizedBox(height: 12),
             insightCard,
@@ -236,7 +241,7 @@ class _MoodTrendSection extends StatelessWidget {
         return d0 == targetDate;
       }).firstOrNull;
       if (entry == null) return null;
-      return (entry.q1 + (6 - entry.q2) + entry.q3) / 3.0;
+      return (entry.q1 + entry.q2 + entry.q3) / 3.0;
     });
 
     final hasData = values.any((v) => v != null);
@@ -268,11 +273,11 @@ class _MoodTrendSection extends StatelessWidget {
   }
 }
 
-class _SleepTrendSection extends StatelessWidget {
+class _SleepQualitySection extends StatelessWidget {
   final AppLocalizations l10n;
   final AppTheme theme;
 
-  const _SleepTrendSection({required this.l10n, required this.theme});
+  const _SleepQualitySection({required this.l10n, required this.theme});
 
   @override
   Widget build(BuildContext context) {
@@ -280,7 +285,7 @@ class _SleepTrendSection extends StatelessWidget {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
 
-    final qualityValues = List<double?>.generate(14, (i) {
+    final values = List<double?>.generate(14, (i) {
       final targetDate = today.subtract(Duration(days: 13 - i));
       final log = logs.where((l) {
         final d0 = DateTime(l.date.year, l.date.month, l.date.day);
@@ -289,7 +294,44 @@ class _SleepTrendSection extends StatelessWidget {
       return log?.quality?.toDouble();
     });
 
-    final durationValues = List<double?>.generate(14, (i) {
+    if (!values.any((v) => v != null)) return _noDataWidget(context);
+
+    final avg = _average(values);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        LineGraph(
+          values: values,
+          labels: _dayLabels(),
+          minY: 1,
+          maxY: 5,
+          yUnit: '',
+          height: 120,
+        ),
+        const SizedBox(height: 8),
+        Text(
+          '${l10n.averageScore}: ${avg.toStringAsFixed(1)} / 5',
+          style: AppTypography.bodySmall(context,
+              color: theme.text.withOpacity(0.65)),
+        ),
+      ],
+    );
+  }
+}
+
+class _SleepDurationSection extends StatelessWidget {
+  final AppLocalizations l10n;
+  final AppTheme theme;
+
+  const _SleepDurationSection({required this.l10n, required this.theme});
+
+  @override
+  Widget build(BuildContext context) {
+    final logs = DataManager().sleepLogs;
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+
+    final values = List<double?>.generate(14, (i) {
       final targetDate = today.subtract(Duration(days: 13 - i));
       final log = logs.where((l) {
         final d0 = DateTime(l.date.year, l.date.month, l.date.day);
@@ -298,134 +340,32 @@ class _SleepTrendSection extends StatelessWidget {
       return log?.durationHours;
     });
 
-    final hasData = qualityValues.any((v) => v != null);
+    if (!values.any((v) => v != null)) return _noDataWidget(context);
 
-    if (!hasData) {
-      return _noDataWidget(context);
-    }
-
-    final avgHours = _average(durationValues);
-
+    final avg = _average(values);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         LineGraph(
-          values: qualityValues,
+          values: values,
           labels: _dayLabels(),
-          minY: 1,
-          maxY: 5,
-          yUnit: '',
-          height: 140,
+          minY: 0,
+          maxY: 12,
+          yUnit: 'h',
+          height: 120,
         ),
         const SizedBox(height: 8),
         Text(
-          '${l10n.averageScore}: ${avgHours.toStringAsFixed(1)}h',
-          style: AppTypography.bodySmall(context, color: theme.text.withOpacity(0.65)),
+          '${l10n.averageScore}: ${avg.toStringAsFixed(1)}h',
+          style: AppTypography.bodySmall(context,
+              color: theme.text.withOpacity(0.65)),
         ),
       ],
     );
   }
 }
 
-class _BreathingSection extends StatelessWidget {
-  final AppLocalizations l10n;
-  final AppTheme theme;
 
-  const _BreathingSection({required this.l10n, required this.theme});
-
-  @override
-  Widget build(BuildContext context) {
-    final allSessions = DataManager().breathingSessions;
-    final weekAgo = DateTime.now().subtract(const Duration(days: 7));
-    final thisWeek = allSessions.where((s) => s.date.isAfter(weekAgo)).toList();
-
-    if (thisWeek.isEmpty) {
-      return _noDataWidget(context);
-    }
-
-    final totalSessions = thisWeek.length;
-    final totalMinutes =
-        thisWeek.fold(0, (sum, s) => sum + s.durationSeconds) ~/ 60;
-
-    final byType = <String, int>{};
-    for (final s in thisWeek) {
-      byType[s.exerciseType] = (byType[s.exerciseType] ?? 0) + 1;
-    }
-    final typeBreakdown = byType.entries
-        .map((e) => '${e.key}: ${e.value}')
-        .join('  ·  ');
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              _StatChip(
-                value: '$totalSessions',
-                label: l10n.sessions,
-                theme: theme,
-              ),
-              const SizedBox(width: 12),
-              _StatChip(
-                value: '$totalMinutes',
-                label: 'min',
-                theme: theme,
-              ),
-            ],
-          ),
-          if (typeBreakdown.isNotEmpty) ...[
-            const SizedBox(height: 8),
-            Text(
-              typeBreakdown,
-              style: AppTypography.bodySmall(context,
-                  color: theme.text.withOpacity(0.65)),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-}
-
-class _StatChip extends StatelessWidget {
-  final String value;
-  final String label;
-  final AppTheme theme;
-
-  const _StatChip({
-    required this.value,
-    required this.label,
-    required this.theme,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      decoration: BoxDecoration(
-        color: theme.primary.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: RichText(
-        text: TextSpan(
-          children: [
-            TextSpan(
-              text: value,
-              style: AppTypography.h4(context, color: theme.primary),
-            ),
-            TextSpan(
-              text: ' $label',
-              style: AppTypography.bodySmall(context,
-                  color: theme.text.withOpacity(0.65)),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
 
 class _InsightSection extends StatelessWidget {
   final AppLocalizations l10n;
@@ -436,50 +376,61 @@ class _InsightSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final diaries = DataManager().emotionDiaries;
-    final sessions = DataManager().breathingSessions;
+    final sleepLogs = DataManager().sleepLogs;
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final cutoff = today.subtract(const Duration(days: 13));
 
-    final diaryMap = <DateTime, double>{};
+    // Collect days that have both diary AND sleep data
+    final paired = <({EmotionDiary diary, SleepLog sleep})>[];
     for (final d in diaries) {
       final date = DateTime(d.date.year, d.date.month, d.date.day);
-      if (!date.isBefore(cutoff)) {
-        diaryMap[date] = (d.q1 + (6 - d.q2) + d.q3) / 3.0;
-      }
+      if (date.isBefore(cutoff)) continue;
+      final sleep = sleepLogs.where((s) {
+        final sd = DateTime(s.date.year, s.date.month, s.date.day);
+        return sd == date;
+      }).firstOrNull;
+      if (sleep == null ||
+          sleep.durationHours == null ||
+          sleep.quality == null) { continue; }
+      paired.add((diary: d, sleep: sleep));
     }
 
-    if (diaryMap.length < 3) return const SizedBox.shrink();
+    if (paired.length < 5) return const SizedBox.shrink();
 
-    final breathingDates = sessions
-        .where((s) =>
-            !DateTime(s.date.year, s.date.month, s.date.day).isBefore(cutoff))
-        .map((s) => DateTime(s.date.year, s.date.month, s.date.day))
-        .toSet();
+    final goodSleep = paired
+        .where((p) =>
+            p.sleep.durationHours! >= 7.0 && p.sleep.quality! >= 4)
+        .toList();
+    final badSleep = paired
+        .where((p) =>
+            p.sleep.durationHours! < 6.5 || p.sleep.quality! <= 2)
+        .toList();
 
-    final breathingScores = diaryMap.entries
-        .where((e) => breathingDates.contains(e.key))
-        .map((e) => e.value)
-        .toList();
-    final nonBreathingScores = diaryMap.entries
-        .where((e) => !breathingDates.contains(e.key))
-        .map((e) => e.value)
-        .toList();
+    double avgQ2(List<({EmotionDiary diary, SleepLog sleep})> items) =>
+        items.isEmpty
+            ? 3.0
+            : items.map((p) => p.diary.q2.toDouble()).reduce((a, b) => a + b) /
+                items.length;
+
+    double avgScore(List<({EmotionDiary diary, SleepLog sleep})> items) =>
+        items.isEmpty
+            ? 3.0
+            : items
+                    .map((p) =>
+                        (p.diary.q1 + p.diary.q2 + p.diary.q3) / 3.0)
+                    .reduce((a, b) => a + b) /
+                items.length;
 
     final String message;
-    if (breathingScores.isEmpty || nonBreathingScores.isEmpty) {
-      message = l10n.insightBreathingEncourage;
+    if (badSleep.length >= 2 && avgQ2(badSleep) <= 2.5) {
+      message = l10n.insightStressFromPoorSleep;
+    } else if (goodSleep.length >= 2 && avgScore(goodSleep) >= 4.0) {
+      message = l10n.insightGoodMoodFromGoodSleep;
+    } else if (goodSleep.length >= 2 && avgQ2(goodSleep) <= 2.5) {
+      message = l10n.insightStressNotFromSleep;
     } else {
-      final breathingAvg =
-          breathingScores.reduce((a, b) => a + b) / breathingScores.length;
-      final nonAvg =
-          nonBreathingScores.reduce((a, b) => a + b) / nonBreathingScores.length;
-      final diff = breathingAvg - nonAvg;
-      if (diff >= 0.3) {
-        message = l10n.insightBreathingPositive('+${diff.toStringAsFixed(1)}');
-      } else {
-        message = l10n.insightBreathingNeutral;
-      }
+      message = l10n.insightKeepItUp;
     }
 
     return Padding(

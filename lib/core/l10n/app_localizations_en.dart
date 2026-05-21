@@ -943,7 +943,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   // Dashboard
-  @override String get dashboard => 'Overview';
+  @override String get dashboard => 'Stats';
   @override String get moodTrend => 'Mood trend';
   @override String get sleepTrend => 'Sleep trend';
   @override String get breathingThisWeek => 'Breathing this week';
@@ -952,15 +952,20 @@ class AppLocalizationsEn extends AppLocalizations {
   @override String get noDataYet => 'No data yet';
   @override String get lowMoodSuggestionTitle => 'Want to unwind a little? 💙';
   @override String get lowMoodActionBreathing => 'Regulate emotions now';
+  @override String get lowMoodActionBreathingDesc => '4-7-8 · Box · Deep belly breathing';
   @override String get lowMoodActionRest => 'Wind down for today';
+  @override String get lowMoodActionRestDesc => 'Check your schedule or prepare for sleep';
   @override String get lowMoodActionPlay => 'Quick distraction';
+  @override String get lowMoodActionPlayDesc => 'A mini-game to take your mind off things';
   @override String get insightTitle => 'Insights';
-  @override String insightBreathingPositive(String diff) =>
-      'On breathing days, your mood is $diff pts higher 💙';
-  @override String get insightBreathingNeutral =>
-      'Your mood looks stable — keep tracking!';
-  @override String get insightBreathingEncourage =>
-      'Add breathing sessions to see their effect on your mood!';
+  @override String get insightStressFromPoorSleep =>
+      'Stress tends to spike on nights with poor sleep — better rest may help 😴';
+  @override String get insightGoodMoodFromGoodSleep =>
+      'On nights with good sleep, your mood is noticeably more positive 🌟';
+  @override String get insightStressNotFromSleep =>
+      'You\'re sleeping well but still stressed — the cause may be external 💭';
+  @override String get insightKeepItUp =>
+      'Your data looks stable — keep up the good work! 👍';
 
   // Mascot dialogues - Click dialogues (2 variants per scene)
   @override

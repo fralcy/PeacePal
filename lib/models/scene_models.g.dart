@@ -180,7 +180,7 @@ class MascotExpressionAdapter extends TypeAdapter<MascotExpression> {
       case 2:
         return MascotExpression.calm;
       case 3:
-        return MascotExpression.sad;
+        return MascotExpression.sympathy;
       case 4:
         return MascotExpression.sleepy;
       case 5:
@@ -202,7 +202,7 @@ class MascotExpressionAdapter extends TypeAdapter<MascotExpression> {
       case MascotExpression.calm:
         writer.writeByte(2);
         break;
-      case MascotExpression.sad:
+      case MascotExpression.sympathy:
         writer.writeByte(3);
         break;
       case MascotExpression.sleepy:

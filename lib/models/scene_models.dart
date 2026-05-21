@@ -75,7 +75,7 @@ enum MascotExpression {
   @HiveField(2)
   calm,      // Bình tĩnh, thư giãn
   @HiveField(3)
-  sad,       // Buồn
+  sympathy,  // Đồng cảm, an ủi
   @HiveField(4)
   sleepy,    // Buồn ngủ
   @HiveField(5)

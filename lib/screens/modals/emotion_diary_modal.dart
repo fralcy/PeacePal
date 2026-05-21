@@ -102,6 +102,7 @@ class _EmotionDiaryModalState extends State<EmotionDiaryModal> {
   final AuthService _authService = AuthService();
 
   bool _showSuggestion = false;
+  final GlobalKey _suggestionKey = GlobalKey();
 
   @override
   void initState() {
@@ -494,8 +495,11 @@ class _EmotionDiaryModalState extends State<EmotionDiaryModal> {
 
         if (!isReadOnly) ...[
           const SizedBox(height: 20),
+          if (_showSuggestion) ...[
+            _buildSuggestionCard(l10n, theme),
+            const SizedBox(height: 20),
+          ],
           KeyedSubtree(key: _saveKey, child: _buildSaveButton(l10n, theme)),
-          if (_showSuggestion) _buildSuggestionCard(l10n, theme),
         ],
       ],
     );
@@ -503,7 +507,7 @@ class _EmotionDiaryModalState extends State<EmotionDiaryModal> {
 
   Widget _buildSuggestionCard(AppLocalizations l10n, AppTheme theme) {
     return Container(
-      margin: const EdgeInsets.only(top: 16),
+      key: _suggestionKey,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: theme.primary.withOpacity(0.08),
@@ -515,11 +519,16 @@ class _EmotionDiaryModalState extends State<EmotionDiaryModal> {
         children: [
           Text(
             l10n.lowMoodSuggestionTitle,
-            style: AppTypography.bodyMedium(context, color: theme.text),
+            style: AppTypography.bodyMedium(context,
+                color: theme.text, fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 12),
-          AppButton(
-            label: l10n.lowMoodActionBreathing,
+          _buildSuggestionTile(
+            icon: Icons.self_improvement,
+            iconColor: const Color(0xFF5B8CFF),
+            title: l10n.lowMoodActionBreathing,
+            subtitle: l10n.lowMoodActionBreathingDesc,
+            theme: theme,
             onPressed: () {
               final rootCtx = Navigator.of(context, rootNavigator: true).context;
               Navigator.of(context).pop();
@@ -527,8 +536,12 @@ class _EmotionDiaryModalState extends State<EmotionDiaryModal> {
             },
           ),
           const SizedBox(height: 8),
-          AppButton(
-            label: l10n.lowMoodActionRest,
+          _buildSuggestionTile(
+            icon: Icons.bedtime_rounded,
+            iconColor: const Color(0xFF9B72CF),
+            title: l10n.lowMoodActionRest,
+            subtitle: l10n.lowMoodActionRestDesc,
+            theme: theme,
             onPressed: () {
               final rootCtx = Navigator.of(context, rootNavigator: true).context;
               Navigator.of(context).pop();
@@ -540,8 +553,12 @@ class _EmotionDiaryModalState extends State<EmotionDiaryModal> {
             },
           ),
           const SizedBox(height: 8),
-          AppButton(
-            label: l10n.lowMoodActionPlay,
+          _buildSuggestionTile(
+            icon: Icons.sports_esports_rounded,
+            iconColor: const Color(0xFF4CAF82),
+            title: l10n.lowMoodActionPlay,
+            subtitle: l10n.lowMoodActionPlayDesc,
+            theme: theme,
             onPressed: () {
               final rootCtx = Navigator.of(context, rootNavigator: true).context;
               Navigator.of(context).pop();
@@ -549,6 +566,64 @@ class _EmotionDiaryModalState extends State<EmotionDiaryModal> {
             },
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildSuggestionTile({
+    required IconData icon,
+    required Color iconColor,
+    required String title,
+    required String subtitle,
+    required AppTheme theme,
+    required VoidCallback onPressed,
+  }) {
+    return Material(
+      color: theme.background,
+      borderRadius: BorderRadius.circular(12),
+      child: InkWell(
+        onTap: () {
+          SfxService().buttonClick();
+          onPressed();
+        },
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: theme.border.withOpacity(0.4)),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: iconColor.withOpacity(0.15),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(icon, color: iconColor, size: 20),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(title,
+                        style: AppTypography.bodyMedium(context,
+                            color: theme.text, fontWeight: FontWeight.w600)),
+                    const SizedBox(height: 2),
+                    Text(subtitle,
+                        style: AppTypography.bodySmall(context,
+                            color: theme.border)),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              Icon(Icons.arrow_forward_ios_rounded, size: 14, color: theme.border),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -750,12 +825,21 @@ class _EmotionDiaryModalState extends State<EmotionDiaryModal> {
     }
 
     if (mounted) {
+      final positiveScore = (newDiary.q1 + newDiary.q2 + newDiary.q3) / 3.0;
+      final shouldShow = isSavingToday && positiveScore <= 2.5;
       setState(() {
-        if (isSavingToday) {
-          final positiveScore = (newDiary.q1 + (6 - newDiary.q2) + newDiary.q3) / 3.0;
-          _showSuggestion = positiveScore <= 2.5;
-        }
+        if (isSavingToday) _showSuggestion = shouldShow;
       });
+      if (shouldShow) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          final ctx = _suggestionKey.currentContext;
+          if (ctx != null) {
+            Scrollable.ensureVisible(ctx,
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeOut);
+          }
+        });
+      }
     }
   }
 
