@@ -10,7 +10,7 @@
 
 ---
 
-![PeacePal Splash](assets/images/mobile_splash.png)
+![PeacePal Splash](assets/images/desktop_splash.webp)
 
 ---
 
