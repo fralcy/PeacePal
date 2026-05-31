@@ -8,6 +8,7 @@ import 'core/constants/app_typography.dart';
 import 'core/utils/locale_storage.dart';
 import 'core/l10n/app_localizations_delegate.dart';
 import 'core/utils/data_manager.dart';
+import 'core/utils/auth_service.dart';
 import 'core/utils/bgm_service.dart';
 import 'core/utils/sfx_service.dart';
 import 'core/utils/notifier.dart';
@@ -49,6 +50,9 @@ void main() async {
     debugPrint('[INIT] Starting DataManager...');
     await DataManager().initialize();
     debugPrint('[INIT] DataManager OK');
+
+    // Warm up debug mode cache so UI can check synchronously
+    await AuthService().isDebugMode;
 
     // Init BGM Service
     debugPrint('[INIT] Starting BgmService...');

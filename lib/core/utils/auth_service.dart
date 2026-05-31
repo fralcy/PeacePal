@@ -3,11 +3,15 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  
+
   // Keys for SharedPreferences
   static const String _isGuestKey = 'is_guest_mode';
   static const String _isDebugKey = 'is_debug_mode';
   static const String _isFirstLaunchKey = 'is_first_launch';
+
+  // In-memory cache so UI can read synchronously after first async load
+  static bool _debugModeCache = false;
+  static bool get debugModeSync => _debugModeCache;
 
   // Get current user
   User? get currentUser {
@@ -31,7 +35,8 @@ class AuthService {
   // Check if in debug mode
   Future<bool> get isDebugMode async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getBool(_isDebugKey) ?? false;
+    _debugModeCache = prefs.getBool(_isDebugKey) ?? false;
+    return _debugModeCache;
   }
 
   // Check if first launch
@@ -83,6 +88,7 @@ class AuthService {
 
   // Set debug mode
   Future<void> setDebugMode() async {
+    _debugModeCache = true;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_isDebugKey, true);
     await prefs.setBool(_isFirstLaunchKey, false);

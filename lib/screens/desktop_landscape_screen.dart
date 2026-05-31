@@ -18,6 +18,7 @@ import 'modals/profile_modal.dart';
 import 'modals/scene_shop_modal.dart';
 import 'modals/achievements_modal.dart';
 import 'modals/settings_modal.dart';
+import 'modals/dashboard_modal.dart';
 import 'mobile_portrait_tutorial_screen.dart';
 
 /// Desktop Landscape Layout Screen
@@ -377,6 +378,7 @@ class _DesktopLandscapeScreenState extends State<DesktopLandscapeScreen>
           const SizedBox(height: 8),
           // Menu dropdown: profile / tutorial / settings
           PopupMenuButton<String>(
+            onOpened: checkDebugMode,
             onSelected: (value) {
               if (value == 'profile') {
                 ProfileModal.show(context);
@@ -393,6 +395,8 @@ class _DesktopLandscapeScreenState extends State<DesktopLandscapeScreen>
               } else if (value == 'settings') {
                 SfxService().buttonClick();
                 SettingsModal.show(context);
+              } else if (value == 'dashboard') {
+                DashboardModal.show(context);
               }
             },
             color: theme.background,
@@ -415,6 +419,15 @@ class _DesktopLandscapeScreenState extends State<DesktopLandscapeScreen>
                   Text(l10n.tutorialTitle, style: AppTypography.bodyLarge(context, color: theme.text)),
                 ]),
               ),
+              if (isDebugMode || DashboardModal.hasData())
+                PopupMenuItem<String>(
+                  value: 'dashboard',
+                  child: Row(children: [
+                    Icon(Icons.bar_chart, color: theme.primary, size: 20),
+                    const SizedBox(width: 12),
+                    Text(l10n.dashboard, style: AppTypography.bodyLarge(context, color: theme.text)),
+                  ]),
+                ),
               PopupMenuItem<String>(
                 value: 'settings',
                 child: Row(children: [

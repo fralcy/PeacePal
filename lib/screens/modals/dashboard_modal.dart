@@ -21,6 +21,7 @@ class DashboardModal extends StatefulWidget {
       size.width >= 720 && size.width > size.height && size.height >= 600;
 
   static bool hasData() {
+    if (AuthService.debugModeSync) return true;
     final dm = DataManager();
     return dm.emotionDiaries.isNotEmpty || dm.sleepLogs.isNotEmpty;
   }
