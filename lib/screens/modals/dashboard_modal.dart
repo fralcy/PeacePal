@@ -20,6 +20,11 @@ class DashboardModal extends StatefulWidget {
   static bool _isLandscape(Size size) =>
       size.width >= 720 && size.width > size.height && size.height >= 600;
 
+  static bool hasData() {
+    final dm = DataManager();
+    return dm.emotionDiaries.isNotEmpty || dm.sleepLogs.isNotEmpty;
+  }
+
   static Future<void> show(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final size = MediaQuery.of(context).size;

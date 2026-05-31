@@ -5,6 +5,7 @@ import '../constants/app_colors.dart';
 import '../constants/app_typography.dart';
 import '../l10n/app_localizations.dart';
 import '../providers/score_provider.dart';
+import '../utils/auth_service.dart';
 import '../utils/data_manager.dart';
 import '../../screens/modals/profile_modal.dart';
 import '../../screens/modals/settings_modal.dart';
@@ -34,11 +35,18 @@ class AppHeader extends StatefulWidget {
 
 class _AppHeaderState extends State<AppHeader> {
   late int currentPoints;
+  bool _isDebugMode = false;
 
   @override
   void initState() {
     super.initState();
     currentPoints = DataManager().userProfile.currentPoints;
+    _checkDebugMode();
+  }
+
+  Future<void> _checkDebugMode() async {
+    final isDebug = await AuthService().isDebugMode;
+    if (mounted) setState(() => _isDebugMode = isDebug);
   }
 
   @override
@@ -63,6 +71,7 @@ class _AppHeaderState extends State<AppHeader> {
       button: true,
       enabled: true,
       child: PopupMenuButton<String>(
+        onOpened: _checkDebugMode,
         onSelected: (value) {
           if (value == 'profile') {
             ProfileModal.show(context);
@@ -99,16 +108,17 @@ class _AppHeaderState extends State<AppHeader> {
                 ],
               ),
             ),
-          PopupMenuItem<String>(
-            value: 'dashboard',
-            child: Row(
-              children: [
-                Icon(Icons.bar_chart, color: theme.primary, size: 20),
-                const SizedBox(width: 12),
-                Text(l10n.dashboard, style: AppTypography.bodyLarge(context, color: theme.text)),
-              ],
+          if (_isDebugMode || DashboardModal.hasData())
+            PopupMenuItem<String>(
+              value: 'dashboard',
+              child: Row(
+                children: [
+                  Icon(Icons.bar_chart, color: theme.primary, size: 20),
+                  const SizedBox(width: 12),
+                  Text(l10n.dashboard, style: AppTypography.bodyLarge(context, color: theme.text)),
+                ],
+              ),
             ),
-          ),
           PopupMenuItem<String>(
             value: 'settings',
             child: Row(
