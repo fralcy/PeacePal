@@ -106,13 +106,19 @@ class _DashboardModalState extends State<DashboardModal> {
         ),
     ]);
 
-    // Sleep: 8-10 days, only quality needed for chart
+    // Sleep: 8-10 days with quality + realistic bedtime/waketime
     final sleepCount = 8 + rng.nextInt(3);
     await dm.saveSleepLogs([
       for (int d = 1; d <= sleepCount; d++)
         SleepLog(
           date: today.subtract(Duration(days: d)),
           quality: rng.nextInt(5) + 1,
+          // bedtime: 21:00–01:00 (1260–1500 min, wrapping via %1440)
+          bedtimeMinutes: (1260 + rng.nextInt(181)) % 1440,
+          // sleep 5.5–9h: waketime = bedtime + 330..540 min (mod 1440)
+          wakeTimeMinutes:
+              ((1260 + rng.nextInt(181)) % 1440 + 330 + rng.nextInt(211)) %
+                  1440,
         ),
     ]);
 
@@ -148,11 +154,23 @@ class _DashboardModalState extends State<DashboardModal> {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final insightCutoff = today.subtract(const Duration(days: 13));
-    final recentDiaryCount = DataManager().emotionDiaries.where((d) {
+    final dm = DataManager();
+    final recentDiaryCount = dm.emotionDiaries.where((d) {
       final date = DateTime(d.date.year, d.date.month, d.date.day);
       return !date.isBefore(insightCutoff);
     }).length;
-    final insightCard = recentDiaryCount >= 3
+    final pairedCount = dm.emotionDiaries.where((d) {
+      final date = DateTime(d.date.year, d.date.month, d.date.day);
+      if (date.isBefore(insightCutoff)) return false;
+      final sleep = dm.sleepLogs.where((s) {
+        final sd = DateTime(s.date.year, s.date.month, s.date.day);
+        return sd == date;
+      }).firstOrNull;
+      return sleep != null &&
+          sleep.durationHours != null &&
+          sleep.quality != null;
+    }).length;
+    final insightCard = (recentDiaryCount >= 3 && pairedCount >= 5)
         ? AppCard(
             title: l10n.insightTitle,
             content: _InsightSection(l10n: l10n, theme: theme),
