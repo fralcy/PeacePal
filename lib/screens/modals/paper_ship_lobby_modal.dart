@@ -884,6 +884,8 @@ class _PaperShipLobbyModalState extends State<PaperShipLobbyModal> {
           _buildPendingList(theme, l10n, room, currentRoom!),
         ],
         const SizedBox(height: 20),
+        _buildScoreTargetConfig(theme, l10n),
+        const SizedBox(height: 12),
         _buildButtonRow(theme, l10n,
           rowKey: _startKey,
           actionLabel: l10n.startGame,
