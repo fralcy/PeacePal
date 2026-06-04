@@ -54,6 +54,20 @@ class FoamParticleRenderData {
   });
 }
 
+enum CollectibleType { coin, leaf, star }
+
+class CollectibleRenderData {
+  final Offset screenPos;
+  final CollectibleType type;
+  final double bobPhase;
+
+  const CollectibleRenderData({
+    required this.screenPos,
+    required this.type,
+    required this.bobPhase,
+  });
+}
+
 class PaperShipRenderSnapshot {
   final Offset boatPos;
   final double boatAngle;          // radians
@@ -65,6 +79,9 @@ class PaperShipRenderSnapshot {
   final double distanceTraveled;
   final Color skyColor;
   final Biome currentBiome;
+  final List<CollectibleRenderData> collectibles;
+  final int itemsCollected;
+  final bool isSpeedPenalized;
 
   const PaperShipRenderSnapshot({
     required this.boatPos,
@@ -77,6 +94,9 @@ class PaperShipRenderSnapshot {
     required this.distanceTraveled,
     required this.skyColor,
     required this.currentBiome,
+    required this.collectibles,
+    required this.itemsCollected,
+    required this.isSpeedPenalized,
   });
 }
 
@@ -113,6 +133,22 @@ class _FoamParticle {
   bool get isDead => age >= lifetime;
 }
 
+class _CollectibleData {
+  final int id;
+  final double worldX;
+  final double worldY;
+  final CollectibleType type;
+  bool collected = false;
+  double collectedTimer = 0.0;
+
+  _CollectibleData({
+    required this.id,
+    required this.worldX,
+    required this.worldY,
+    required this.type,
+  });
+}
+
 // ── PaperShipWorld ────────────────────────────────────────────
 //
 // Coordinate convention:
@@ -146,6 +182,18 @@ class PaperShipWorld {
   static const double _shakeDampingBase = 0.85;
   static const double _boatAnchorY = 0.68;        // initial screen Y fraction
   static const double _boatRadius = 18.0;
+
+  // Collectibles
+  static const double _collectiblePickupRadius = 28.0;
+  static const double _collectibleSpawnInterval = 4.5;  // seconds between spawns
+  static const double _collectibleGracePeriod = 1.0;    // keep col:true in payload
+
+  // HP / speed penalty
+  static const double _hpCollisionDamage = 0.18;
+  static const double _hpPenaltyThreshold = 0.25;
+  static const double _penaltyDuration = 3.5;     // seconds before auto-recovery
+  static const double _penaltySpeedMult = 0.42;   // effective max speed when penalized
+  static const double _hpPassiveRecovery = 0.04;  // HP/sec when not penalized
 
   // Buffer zone & scroll threshold
   static const double _kBufferX         = 0.10;
@@ -209,6 +257,17 @@ class PaperShipWorld {
 
   final math.Random _rng;
 
+  // ── Collectibles ─────────────────────────────────────────
+  final List<_CollectibleData> _collectibles = [];
+  int _itemsCollected = 0;
+  int _collectibleIdCounter = 0;
+  double _collectibleSpawnTimer = 0.0;
+
+  // ── HP / penalty ─────────────────────────────────────────
+  double _boatHp = 1.0;
+  bool _isPenalized = false;
+  double _penaltyTimer = 0.0;
+
   // ── Constructor ──────────────────────────────────────────
 
   PaperShipWorld({
@@ -227,6 +286,7 @@ class PaperShipWorld {
   }
 
   double get distanceTraveled => _distanceTraveled;
+  int get itemsCollected => _itemsCollected;
 
   // ── Wave spawning ────────────────────────────────────────
 
@@ -257,12 +317,15 @@ class PaperShipWorld {
   void step(double dt) {
     _elapsedSeconds += dt;
     _advanceWaves(dt);
+    _updateHpAndPenalty(dt);
     final totalForce = _computeBoatForce();
     _integrateBoat(dt, totalForce);
     _checkBoatObstacleCollision();
     _advanceFoam(dt);
     _advanceScroll(dt);
     _updateWakeTrail();
+    _advanceCollectibles(dt);
+    _checkBoatCollectibleCollection();
   }
 
   void stepClient(double dt) {
@@ -425,8 +488,9 @@ class PaperShipWorld {
     _boatVelocity = _boatVelocity * damping;
 
     final speed = _boatVelocity.distance;
-    if (speed > _maxBoatSpeed) {
-      _boatVelocity = _boatVelocity / speed * _maxBoatSpeed;
+    final effectiveCap = _isPenalized ? _maxBoatSpeed * _penaltySpeedMult : _maxBoatSpeed;
+    if (speed > effectiveCap) {
+      _boatVelocity = _boatVelocity / speed * effectiveCap;
     }
 
     _boatPos = _boatPos + _boatVelocity * dt;
@@ -518,6 +582,11 @@ class PaperShipWorld {
         );
         _shakeAmount = (_shakeAmount + penetration * _shakeScale).clamp(0.0, 6.0);
         _spawnFoam(_boatPos - normal * _boatRadius);
+        _boatHp = (_boatHp - _hpCollisionDamage).clamp(0.0, 1.0);
+        if (_boatHp < _hpPenaltyThreshold && !_isPenalized) {
+          _isPenalized = true;
+          _penaltyTimer = 0.0;
+        }
       }
     }
   }
@@ -606,6 +675,68 @@ class PaperShipWorld {
     );
   }
 
+  // ── HP / penalty ─────────────────────────────────────────
+
+  void _updateHpAndPenalty(double dt) {
+    if (_isPenalized) {
+      _penaltyTimer += dt;
+      if (_penaltyTimer >= _penaltyDuration) {
+        _isPenalized = false;
+        _boatHp = 1.0;
+        _penaltyTimer = 0.0;
+      }
+    } else {
+      _boatHp = (_boatHp + _hpPassiveRecovery * dt).clamp(0.0, 1.0);
+    }
+  }
+
+  // ── Collectibles ─────────────────────────────────────────
+
+  void _advanceCollectibles(double dt) {
+    _collectibleSpawnTimer += dt;
+    if (_collectibleSpawnTimer >= _collectibleSpawnInterval) {
+      _collectibleSpawnTimer = 0.0;
+      _spawnCollectible();
+    }
+    for (final c in _collectibles) {
+      if (c.collected) c.collectedTimer += dt;
+    }
+    // Cull items that have drifted well below the screen
+    _collectibles.removeWhere((c) {
+      final screenY = _scrollOffset - c.worldY;
+      return screenY > ch * 1.5 && !c.collected;
+    });
+  }
+
+  void _spawnCollectible() {
+    _collectibles.removeWhere(
+        (c) => c.collected && c.collectedTimer >= _collectibleGracePeriod);
+    final x = cw * (0.15 + _rng.nextDouble() * 0.70);
+    final screenY = ch * (0.10 + _rng.nextDouble() * 0.60);
+    final worldY = _scrollOffset - screenY;
+    final type = CollectibleType.values[_rng.nextInt(CollectibleType.values.length)];
+    _collectibles.add(_CollectibleData(
+      id: _collectibleIdCounter++,
+      worldX: x,
+      worldY: worldY,
+      type: type,
+    ));
+  }
+
+  void _checkBoatCollectibleCollection() {
+    for (final c in _collectibles) {
+      if (c.collected) continue;
+      final screenY = _scrollOffset - c.worldY;
+      if (screenY < -ch * 0.1 || screenY > ch * 1.1) continue;
+      final screenPos = Offset(c.worldX, screenY);
+      if ((_boatPos - screenPos).distance < _collectiblePickupRadius) {
+        c.collected = true;
+        c.collectedTimer = 0.0;
+        _itemsCollected++;
+      }
+    }
+  }
+
   // ── Render snapshot ──────────────────────────────────────
 
   PaperShipRenderSnapshot buildRenderData() {
@@ -668,6 +799,17 @@ class PaperShipWorld {
 
     final skyColor = _computeSkyColor();
 
+    final collectibles = _collectibles
+        .where((c) => !(c.collected && c.collectedTimer >= _collectibleGracePeriod))
+        .map((c) {
+      final screenY = _scrollOffset - c.worldY;
+      return CollectibleRenderData(
+        screenPos: Offset(c.worldX, screenY),
+        type: c.type,
+        bobPhase: _elapsedSeconds * 1.8 + c.id * 1.1,
+      );
+    }).toList();
+
     return PaperShipRenderSnapshot(
       boatPos: _boatPos,
       boatAngle: _boatAngle,
@@ -679,6 +821,9 @@ class PaperShipWorld {
       distanceTraveled: _distanceTraveled,
       skyColor: skyColor,
       currentBiome: _chunks.currentBiome,
+      collectibles: collectibles,
+      itemsCollected: _itemsCollected,
+      isSpeedPenalized: _isPenalized,
     );
   }
 
@@ -709,6 +854,18 @@ class PaperShipWorld {
             'age': w.age,
             'ownerId': w.ownerId,
           }).toList(),
+      'pen': _isPenalized,
+      'ic': _itemsCollected,
+      'items': _collectibles
+          .where((c) => !(c.collected && c.collectedTimer >= _collectibleGracePeriod))
+          .map((c) => {
+                'id': c.id,
+                'ox': c.worldX / cw,
+                'oy': (c.worldY - _scrollOffset) / ch,
+                'type': c.type.index,
+                'col': c.collected,
+              })
+          .toList(),
     };
   }
 
@@ -744,5 +901,22 @@ class PaperShipWorld {
 
     _chunks.ensureAhead(_scrollOffset + ch * 2);
     _chunks.cullBehind(_scrollOffset - ch);
+
+    _isPenalized = data['pen'] as bool? ?? false;
+    _itemsCollected = (data['ic'] as num? ?? 0).toInt();
+
+    _collectibles.clear();
+    final itemList = data['items'] as List<dynamic>? ?? [];
+    for (final item in itemList) {
+      final c = _CollectibleData(
+        id: (item['id'] as num).toInt(),
+        worldX: (item['ox'] as num).toDouble() * cw,
+        worldY: _scrollOffset + (item['oy'] as num).toDouble() * ch,
+        type: CollectibleType.values[(item['type'] as num? ?? 0).toInt()
+            .clamp(0, CollectibleType.values.length - 1)],
+      );
+      c.collected = item['col'] as bool? ?? false;
+      _collectibles.add(c);
+    }
   }
 }
