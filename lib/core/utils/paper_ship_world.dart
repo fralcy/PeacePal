@@ -733,6 +733,20 @@ class PaperShipWorld {
         c.collected = true;
         c.collectedTimer = 0.0;
         _itemsCollected++;
+        switch (c.type) {
+          case CollectibleType.leaf:
+            // Leaf: restore 10% HP immediately
+            _boatHp = (_boatHp + 0.10).clamp(0.0, 1.0);
+          case CollectibleType.star:
+            // Star: instantly clear speed penalty and fully restore HP
+            if (_isPenalized) {
+              _isPenalized = false;
+              _boatHp = 1.0;
+              _penaltyTimer = 0.0;
+            }
+          case CollectibleType.coin:
+            break; // coins are points only
+        }
       }
     }
   }
