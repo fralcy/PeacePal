@@ -1105,6 +1105,8 @@ class AppLocalizationsVi extends AppLocalizations {
   @override String get tutorialPaperShipGameInfoTargetDesc => 'Hiển thị khoảng cách so với mốc và thời gian đã chơi. Đạt đủ mốc để kết thúc trò chơi.';
   @override String get tutorialPaperShipLobbyScoreTargetTitle => 'Mốc khoảng cách';
   @override String get tutorialPaperShipLobbyScoreTargetDesc => 'Đặt mục tiêu khoảng cách tính bằng cm. Thuyền đạt đến mốc thì trò chơi tự kết thúc. Đặt về 0 để chơi không giới hạn.';
+  @override String get tutorialPaperShipGameItemsTitle => 'Vật phẩm';
+  @override String get tutorialPaperShipGameItemsDesc => 'Nhặt đồng xu, lá cây và ngôi sao trôi trên sông để ghi điểm. Lá cây hồi ngay 10% HP; Ngôi sao hóa giải trạng thái bị chậm lập tức. Va chạm nhiều sẽ làm thuyền chậm lại — hãy lao vào nhặt ngôi sao để lật kèo!';
 
   @override
 

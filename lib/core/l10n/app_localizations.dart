@@ -505,6 +505,8 @@ abstract class AppLocalizations {
   String get tutorialPaperShipGameInfoTargetDesc;
   String get tutorialPaperShipLobbyScoreTargetTitle;
   String get tutorialPaperShipLobbyScoreTargetDesc;
+  String get tutorialPaperShipGameItemsTitle;
+  String get tutorialPaperShipGameItemsDesc;
 
   // Breathing Exercise
   String get breathing;

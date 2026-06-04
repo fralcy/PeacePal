@@ -1103,6 +1103,8 @@ class AppLocalizationsEn extends AppLocalizations {
   @override String get tutorialPaperShipGameInfoTargetDesc => 'Shows distance vs. the target and time elapsed. Reach the target distance to end the game.';
   @override String get tutorialPaperShipLobbyScoreTargetTitle => 'Distance Target';
   @override String get tutorialPaperShipLobbyScoreTargetDesc => 'Set a distance goal in cm. When the ship reaches it, the game ends automatically. Set to 0 for endless mode.';
+  @override String get tutorialPaperShipGameItemsTitle => 'Collectibles';
+  @override String get tutorialPaperShipGameItemsDesc => 'Pick up coins, leaves and stars floating on the river to score points. Leaves restore 10% HP instantly; Stars clear the speed penalty immediately. Ram too many obstacles and the ship slows — grab a star to turn things around!';
 
   @override
 

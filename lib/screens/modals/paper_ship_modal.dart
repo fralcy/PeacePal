@@ -189,6 +189,12 @@ class _PaperShipModalState extends State<PaperShipModal>
               : l10n.tutorialPaperShipGameInfoDesc,
           tag: 'paper_ship_info',
         ),
+        TutorialStep(
+          targetKey: _canvasKey,
+          title: l10n.tutorialPaperShipGameItemsTitle,
+          description: l10n.tutorialPaperShipGameItemsDesc,
+          tag: 'paper_ship_items',
+        ),
       ],
       nextText: l10n.tutorialNext,
       skipText: l10n.tutorialSkip,
