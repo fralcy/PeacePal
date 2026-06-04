@@ -1124,25 +1124,42 @@ class AppLocalizationsVi extends AppLocalizations {
   String get exercise478 => 'Hít thở 4-7-8';
 
   @override
-  String get exercise478Desc => 'Thư giãn: Hít 4s, giữ 7s, thở ra 8s';
+  String get exercise478Desc => '4·7·8 — Hỗ trợ giấc ngủ & giảm lo âu';
 
   @override
   String get exerciseBox => 'Hít thở hộp';
 
   @override
-  String get exerciseBoxDesc => 'Cân bằng: Mỗi giai đoạn 4s';
+  String get exerciseBoxDesc => '4·4·4·4 — Tập trung & kiểm soát căng thẳng';
 
   @override
   String get exerciseDeepBelly => 'Hít sâu từ bụng';
 
   @override
-  String get exerciseDeepBellyDesc => 'Dịu nhẹ: Hít 5s, giữ 2s, thở ra 6s';
+  String get exerciseDeepBellyDesc => '5·2·6 — Thư giãn tức thì & hạ nhịp tim';
 
   @override
   String get exerciseCalm => 'Hít thở bình tĩnh';
 
   @override
-  String get exerciseCalmDesc => 'Nhẹ nhàng: Nhịp 4-2-6-2';
+  String get exerciseCalmDesc => '4·2·6·2 — Cân bằng cảm xúc mọi lúc';
+
+  @override
+  String get tutorialBreathing478Title => 'Hít thở 4-7-8';
+  @override
+  String get tutorialBreathing478Desc => 'Phát triển bởi Dr. Andrew Weil. Hít 4 giây → Giữ 7 giây → Thở ra 8 giây qua miệng. Thở ra kéo dài kích hoạt thần kinh phó giao cảm, hạ nhịp tim và giải tỏa căng thẳng nhanh chóng.\nNên dùng khi: chuẩn bị đi ngủ, đang lo âu cấp tính hoặc sau tình huống căng thẳng cao.';
+  @override
+  String get tutorialBreathingBoxTitle => 'Hít thở hộp';
+  @override
+  String get tutorialBreathingBoxDesc => 'Kỹ thuật được lực lượng đặc nhiệm Hải quân Mỹ (Navy SEALs) sử dụng. Hít 4 giây → Giữ 4 giây → Thở ra 4 giây → Nghỉ 4 giây. Nhịp đều cải thiện khả năng chịu CO₂, tăng tập trung và điều hòa phản ứng căng thẳng.\nNên dùng khi: trước thuyết trình, đang chịu áp lực lớn hoặc cần bình tĩnh ngay.';
+  @override
+  String get tutorialBreathingDeepBellyTitle => 'Hít sâu từ bụng';
+  @override
+  String get tutorialBreathingDeepBellyDesc => 'Thở cơ hoành — sử dụng toàn bộ dung tích phổi. Hít 5 giây → Giữ nhẹ 2 giây → Thở ra 6 giây. Tăng lượng oxy hấp thụ, giảm cortisol và thư giãn cơ vai–cổ. Đặt tay lên bụng để cảm nhận bụng phồng lên khi hít vào.\nNên dùng khi: bất kỳ lúc nào, đặc biệt khi vai và cổ căng cứng.';
+  @override
+  String get tutorialBreathingCalmTitle => 'Hít thở bình tĩnh';
+  @override
+  String get tutorialBreathingCalmDesc => 'Nhịp thở nhẹ nhàng, dễ duy trì trong lúc làm việc. Hít 4 giây → Giữ 2 giây → Thở ra 6 giây → Nghỉ 2 giây. Thở ra dài hơn hít vào kích hoạt nhẹ hệ phó giao cảm mà không gây chóng mặt.\nNên dùng khi: trong giờ làm việc, khi hơi căng thẳng hoặc trong lúc di chuyển.';
 
   @override
   String get breatheIn => 'Hít vào...';

@@ -1122,25 +1122,42 @@ class AppLocalizationsEn extends AppLocalizations {
   String get exercise478 => '4-7-8 Breathing';
 
   @override
-  String get exercise478Desc => 'Relaxation: 4s inhale, 7s hold, 8s exhale';
+  String get exercise478Desc => '4·7·8 — Sleep aid & anxiety relief';
 
   @override
   String get exerciseBox => 'Box Breathing';
 
   @override
-  String get exerciseBoxDesc => 'Balance: 4s each phase';
+  String get exerciseBoxDesc => '4·4·4·4 — Focus & stress control';
 
   @override
   String get exerciseDeepBelly => 'Deep Belly';
 
   @override
-  String get exerciseDeepBellyDesc => 'Calming: 5s inhale, 2s hold, 6s exhale';
+  String get exerciseDeepBellyDesc => '5·2·6 — Quick calm & lowers heart rate';
 
   @override
   String get exerciseCalm => 'Calm Breathing';
 
   @override
-  String get exerciseCalmDesc => 'Gentle: 4-2-6-2 pattern';
+  String get exerciseCalmDesc => '4·2·6·2 — Emotional balance, anytime';
+
+  @override
+  String get tutorialBreathing478Title => '4-7-8 Breathing';
+  @override
+  String get tutorialBreathing478Desc => 'Developed by Dr. Andrew Weil. Inhale 4s → Hold 7s → Exhale 8s (through the mouth). The extended exhale activates the parasympathetic nervous system, slowing heart rate and rapidly easing tension.\nBest for: preparing for sleep, acute anxiety, or recovery after high-stress situations.';
+  @override
+  String get tutorialBreathingBoxTitle => 'Box Breathing';
+  @override
+  String get tutorialBreathingBoxDesc => 'Used by US Navy SEALs and first responders. Inhale 4s → Hold 4s → Exhale 4s → Pause 4s. Equal-phase timing builds CO₂ tolerance, sharpens focus, and regulates the stress response.\nBest for: before presentations, high-pressure moments, or when you need to reset quickly.';
+  @override
+  String get tutorialBreathingDeepBellyTitle => 'Deep Belly Breathing';
+  @override
+  String get tutorialBreathingDeepBellyDesc => 'Diaphragmatic breathing — uses the full lung capacity. Inhale 5s → Gentle hold 2s → Exhale 6s. Increases oxygen uptake, reduces cortisol, and relaxes neck and shoulder muscles. Place a hand on your belly to feel it rise on the inhale.\nBest for: any time of day, especially when shoulders or neck feel tight.';
+  @override
+  String get tutorialBreathingCalmTitle => 'Calm Breathing';
+  @override
+  String get tutorialBreathingCalmDesc => 'A gentle, sustainable rhythm suited for daily use. Inhale 4s → Hold 2s → Exhale 6s → Pause 2s. The longer exhale gently activates the parasympathetic system without causing dizziness.\nBest for: during work hours, mild stress, or staying calm while on the go.';
 
   @override
   String get breatheIn => 'Breathe in...';

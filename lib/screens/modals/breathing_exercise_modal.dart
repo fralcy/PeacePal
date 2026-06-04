@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:math' as math;
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+import 'package:flutter_tutorial_overlay/flutter_tutorial_overlay.dart';
 import '../../core/constants/app_typography.dart';
 import '../../core/widgets/app_modal.dart';
 import '../../core/widgets/app_button.dart';
@@ -33,12 +35,14 @@ class BreathingExerciseModal extends StatefulWidget {
       return _showLandscape(context);
     }
     final h = size.height * 0.92;
+    final modalKey = GlobalKey<_BreathingExerciseModalState>();
     return AppModal.show(
       context: context,
       title: l10n.breathingExercise,
       maxHeight: h,
       minHeight: h,
-      content: const BreathingExerciseModal(),
+      onHelpPressed: () => modalKey.currentState?._showTutorial(),
+      content: BreathingExerciseModal(key: modalKey),
     );
   }
 
@@ -47,6 +51,7 @@ class BreathingExerciseModal extends StatefulWidget {
     final size = MediaQuery.of(context).size;
     final dialogWidth = size.width.clamp(0.0, 640.0);
     final dialogHeight = size.height * 0.92;
+    final modalKey = GlobalKey<_BreathingExerciseModalState>();
     return showDialog<void>(
       context: context,
       builder: (context) => Dialog(
@@ -58,7 +63,8 @@ class BreathingExerciseModal extends StatefulWidget {
           child: AppModal(
             isDialog: true,
             title: l10n.breathingExercise,
-            content: const BreathingExerciseModal(),
+            onHelpPressed: () => modalKey.currentState?._showTutorial(),
+            content: BreathingExerciseModal(key: modalKey),
           ),
         ),
       ),
@@ -68,6 +74,48 @@ class BreathingExerciseModal extends StatefulWidget {
 
 class _BreathingExerciseModalState extends State<BreathingExerciseModal>
     with TickerProviderStateMixin {
+  // Tutorial keys — one per exercise card
+  final GlobalKey _key478      = GlobalKey();
+  final GlobalKey _keyBox      = GlobalKey();
+  final GlobalKey _keyDeepBelly = GlobalKey();
+  final GlobalKey _keyCalm     = GlobalKey();
+
+  void _showTutorial() {
+    // Only show when on selection screen (cards are in the tree)
+    if (_selectedExercise != null) return;
+    final l10n = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    TutorialOverlay(
+      context: context,
+      blurOpacity: kIsWeb ? 0 : 20,
+      blurSigma: kIsWeb ? 0 : 6,
+      steps: [
+        TutorialStep(targetKey: _key478,       title: l10n.tutorialBreathing478Title,       description: l10n.tutorialBreathing478Desc,       tag: 'breathing_478'),
+        TutorialStep(targetKey: _keyBox,       title: l10n.tutorialBreathingBoxTitle,        description: l10n.tutorialBreathingBoxDesc,        tag: 'breathing_box'),
+        TutorialStep(targetKey: _keyDeepBelly, title: l10n.tutorialBreathingDeepBellyTitle,  description: l10n.tutorialBreathingDeepBellyDesc,  tag: 'breathing_deep_belly'),
+        TutorialStep(targetKey: _keyCalm,      title: l10n.tutorialBreathingCalmTitle,       description: l10n.tutorialBreathingCalmDesc,       tag: 'breathing_calm'),
+      ],
+      nextText: l10n.tutorialNext,
+      skipText: l10n.tutorialSkip,
+      finshText: l10n.tutorialGotIt,
+      onComplete: () => SfxService().buttonClick(),
+      tooltipBackgroundColor: kIsWeb ? theme.colorScheme.onSurface : theme.colorScheme.surface,
+      titleTextColor: kIsWeb ? theme.colorScheme.surface : theme.colorScheme.onSurface,
+      descriptionTextColor: kIsWeb ? theme.colorScheme.surface : theme.colorScheme.onSurface,
+      nextButtonStyle: ElevatedButton.styleFrom(
+        backgroundColor: theme.colorScheme.primary,
+        foregroundColor: theme.colorScheme.onPrimary,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      ),
+      skipButtonStyle: TextButton.styleFrom(foregroundColor: theme.colorScheme.onSurface),
+      finishButtonStyle: ElevatedButton.styleFrom(
+        backgroundColor: theme.colorScheme.primary,
+        foregroundColor: theme.colorScheme.onPrimary,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      ),
+    ).show();
+  }
+
   // State
   String? _selectedExercise;
   bool _isActive = false;
@@ -129,10 +177,10 @@ class _BreathingExerciseModalState extends State<BreathingExerciseModal>
   Widget _buildExerciseSelection() {
     final l10n = AppLocalizations.of(context);
     final exercises = <Map<String, dynamic>>[
-      {'type': '4-7-8',       'name': l10n.exercise478,        'desc': l10n.exercise478Desc,        'icon': Icons.bedtime},
-      {'type': 'box',         'name': l10n.exerciseBox,         'desc': l10n.exerciseBoxDesc,        'icon': Icons.crop_square},
-      {'type': 'deep_belly',  'name': l10n.exerciseDeepBelly,  'desc': l10n.exerciseDeepBellyDesc,  'icon': Icons.self_improvement},
-      {'type': 'calm',        'name': l10n.exerciseCalm,        'desc': l10n.exerciseCalmDesc,       'icon': Icons.spa},
+      {'type': '4-7-8',      'name': l10n.exercise478,       'desc': l10n.exercise478Desc,       'icon': Icons.nightlight,  'key': _key478},
+      {'type': 'box',        'name': l10n.exerciseBox,        'desc': l10n.exerciseBoxDesc,       'icon': Icons.border_all,  'key': _keyBox},
+      {'type': 'deep_belly', 'name': l10n.exerciseDeepBelly, 'desc': l10n.exerciseDeepBellyDesc, 'icon': Icons.air,         'key': _keyDeepBelly},
+      {'type': 'calm',       'name': l10n.exerciseCalm,       'desc': l10n.exerciseCalmDesc,      'icon': Icons.spa,         'key': _keyCalm},
     ];
 
     return Column(
@@ -143,6 +191,7 @@ class _BreathingExerciseModalState extends State<BreathingExerciseModal>
         ...exercises.map((ex) => Padding(
               padding: const EdgeInsets.only(bottom: 12),
               child: _ExerciseCard(
+                key: ex['key'] as GlobalKey,
                 name: ex['name'] as String,
                 description: ex['desc'] as String,
                 icon: ex['icon'] as IconData,
@@ -521,6 +570,7 @@ class _ExerciseCard extends StatelessWidget {
   final VoidCallback onTap;
 
   const _ExerciseCard({
+    super.key,
     required this.name,
     required this.description,
     required this.icon,

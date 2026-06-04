@@ -520,6 +520,14 @@ abstract class AppLocalizations {
   String get exerciseDeepBellyDesc;
   String get exerciseCalm;
   String get exerciseCalmDesc;
+  String get tutorialBreathing478Title;
+  String get tutorialBreathing478Desc;
+  String get tutorialBreathingBoxTitle;
+  String get tutorialBreathingBoxDesc;
+  String get tutorialBreathingDeepBellyTitle;
+  String get tutorialBreathingDeepBellyDesc;
+  String get tutorialBreathingCalmTitle;
+  String get tutorialBreathingCalmDesc;
   String get breatheIn;
   String get breatheOut;
   String get hold;
