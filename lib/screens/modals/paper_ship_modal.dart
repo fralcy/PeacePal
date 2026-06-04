@@ -427,13 +427,15 @@ class _PaperShipModalState extends State<PaperShipModal>
     final dist = _worldReady && _canvasHeight > 0
         ? _world.buildRenderData().distanceTraveled / _canvasHeight * 100
         : 0.0;
+    final items = _worldReady ? _world.itemsCollected : 0;
     if (!_isSolo) {
       context.read<GameRoomProvider>().endGame({
         'dist': dist,
         'elapsedSeconds': _elapsedSeconds,
+        'items': items,
       });
     }
-    _onGameEnd({'dist': dist, 'elapsedSeconds': _elapsedSeconds});
+    _onGameEnd({'dist': dist, 'elapsedSeconds': _elapsedSeconds, 'items': items});
   }
 
   String _formatTime(double s) {
@@ -451,6 +453,8 @@ class _PaperShipModalState extends State<PaperShipModal>
             ? (_world.buildRenderData().distanceTraveled / _canvasHeight * 100)
             : 0.0);
     final elapsed = (data['elapsedSeconds'] as double?) ?? _elapsedSeconds;
+    final items = (data['items'] as num?)?.toInt()
+        ?? (_worldReady ? _world.itemsCollected : 0);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       final l10n = AppLocalizations.of(context);
@@ -465,8 +469,8 @@ class _PaperShipModalState extends State<PaperShipModal>
                   color: theme.text, fontWeight: FontWeight.bold)),
           content: Text(
             widget.scoreTarget > 0
-                ? '${dist.toStringAsFixed(1)} cm\n${l10n.time}: ${_formatTime(elapsed)}'
-                : '${dist.toStringAsFixed(1)} cm',
+                ? '${dist.toStringAsFixed(1)} cm  ·  $items pts\n${l10n.time}: ${_formatTime(elapsed)}'
+                : '${dist.toStringAsFixed(1)} cm  ·  $items pts',
             style: AppTypography.bodyMedium(context, color: theme.text),
           ),
           actions: [
@@ -527,8 +531,8 @@ class _PaperShipModalState extends State<PaperShipModal>
                 child: Text(
                   snap != null
                       ? (widget.scoreTarget > 0
-                          ? '${(_canvasHeight > 0 ? snap.distanceTraveled / _canvasHeight * 100 : 0.0).toStringAsFixed(1)}/${widget.scoreTarget} cm  |  ${l10n.time}: ${_formatTime(_elapsedSeconds)}'
-                          : '${(_canvasHeight > 0 ? snap.distanceTraveled / _canvasHeight * 100 : 0.0).toStringAsFixed(1)} cm')
+                          ? '${(_canvasHeight > 0 ? snap.distanceTraveled / _canvasHeight * 100 : 0.0).toStringAsFixed(1)}/${widget.scoreTarget} cm  ·  ${snap.itemsCollected} pts  |  ${l10n.time}: ${_formatTime(_elapsedSeconds)}'
+                          : '${(_canvasHeight > 0 ? snap.distanceTraveled / _canvasHeight * 100 : 0.0).toStringAsFixed(1)} cm  ·  ${snap.itemsCollected} pts')
                       : '0.0 cm',
                   style: AppTypography.bodySmall(context,
                       color: theme.primary, fontWeight: FontWeight.bold),
@@ -608,7 +612,6 @@ class _PaperShipPainter extends CustomPainter {
   final PaperShipRenderSnapshot? snapshot;
 
   static const Color _waterColor = Color(0xFF5BC8E8);
-  static const Color _boatBody = Color(0xFFF5F0E8);
   static const Color _boatStroke = Color(0xFF8D6E63);
   static const Color _wakeColor = Color(0xCCFFFFFF);
 
@@ -642,6 +645,9 @@ class _PaperShipPainter extends CustomPainter {
 
     // ── Layer 5: Obstacles (drawn on top of waves) ────────
     _drawObstacles(canvas, snap);
+
+    // ── Layer 5.5: Collectibles ───────────────────────────
+    _drawCollectibles(canvas, snap);
 
     // ── Layer 6: Wake trail ───────────────────────────────
     _drawWake(canvas, snap);
@@ -937,14 +943,13 @@ class _PaperShipPainter extends CustomPainter {
       canvas.translate(shakeX, shakeY);
     }
 
-    _drawBoatShape(canvas);
+    _drawBoatShape(canvas, snap.isSpeedPenalized);
     canvas.restore();
   }
 
-  void _drawBoatShape(Canvas canvas) {
-    // Paper boat: top-down view — elongated diamond with a small sail
-    const hw = 10.0; // half-width
-    const hl = 16.0; // half-length
+  void _drawBoatShape(Canvas canvas, bool isSpeedPenalized) {
+    const hw = 10.0;
+    const hl = 16.0;
 
     final hullPath = Path()
       ..moveTo(0, -hl)
@@ -953,7 +958,16 @@ class _PaperShipPainter extends CustomPainter {
       ..lineTo(-hw, 0)
       ..close();
 
-    canvas.drawPath(hullPath, Paint()..color = _boatBody);
+    // Hull with gradient (paper texture)
+    final hullGradPaint = Paint()
+      ..shader = const LinearGradient(
+        begin: Alignment.centerLeft,
+        end: Alignment.centerRight,
+        colors: [Color(0xFFE8D9C0), Color(0xFFF5F0E8), Color(0xFFE8D9C0)],
+        stops: [0.0, 0.5, 1.0],
+      ).createShader(
+          Rect.fromCenter(center: Offset.zero, width: hw * 2, height: hl * 2));
+    canvas.drawPath(hullPath, hullGradPaint);
     canvas.drawPath(
       hullPath,
       Paint()
@@ -962,13 +976,31 @@ class _PaperShipPainter extends CustomPainter {
         ..strokeWidth = 2.0,
     );
 
-    // Sail: triangle pointing up (forward)
+    // Paper fold crease marks
+    final creasePaint = Paint()
+      ..color = _boatStroke.withValues(alpha: 0.35)
+      ..strokeWidth = 0.8
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round;
+    canvas.drawLine(const Offset(-hw, 0), const Offset(0, -hl), creasePaint);
+    canvas.drawLine(const Offset(hw, 0), const Offset(0, hl), creasePaint);
+
+    // Center mast line
+    canvas.drawLine(
+      Offset(0, -hl * 0.8),
+      const Offset(0, 0),
+      Paint()
+        ..color = _boatStroke.withValues(alpha: 0.5)
+        ..strokeWidth = 1.0
+        ..style = PaintingStyle.stroke,
+    );
+
+    // Curved sail (quadratic bezier for a bellied shape)
     final sailPath = Path()
       ..moveTo(0, -hl + 2)
-      ..lineTo(6, -hl * 0.3)
+      ..quadraticBezierTo(8, -hl * 0.6, 6, -hl * 0.3)
       ..lineTo(0, -hl * 0.3)
       ..close();
-
     canvas.drawPath(sailPath, Paint()..color = const Color(0xFFEF9A9A));
     canvas.drawPath(
       sailPath,
@@ -976,6 +1008,87 @@ class _PaperShipPainter extends CustomPainter {
         ..color = _boatStroke
         ..style = PaintingStyle.stroke
         ..strokeWidth = 1.0,
+    );
+
+    // Speed penalty tint
+    if (isSpeedPenalized) {
+      canvas.drawPath(hullPath,
+          Paint()..color = Colors.red.withValues(alpha: 0.20));
+    }
+  }
+
+  // ── Layer 5.5: Collectibles ───────────────────────────────
+
+  void _drawCollectibles(Canvas canvas, PaperShipRenderSnapshot snap) {
+    for (final c in snap.collectibles) {
+      final pos = Offset(
+        c.screenPos.dx,
+        c.screenPos.dy + math.sin(c.bobPhase) * 3.5,
+      );
+      switch (c.type) {
+        case CollectibleType.coin:
+          _drawCoin(canvas, pos);
+        case CollectibleType.leaf:
+          _drawLeaf(canvas, pos);
+        case CollectibleType.star:
+          _drawStar(canvas, pos);
+      }
+    }
+  }
+
+  void _drawCoin(Canvas canvas, Offset pos) {
+    canvas.drawCircle(pos, 5.0, Paint()..color = const Color(0xFFFFD54F));
+    canvas.drawCircle(
+      pos,
+      5.0,
+      Paint()
+        ..color = const Color(0xFFF9A825)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.2,
+    );
+  }
+
+  void _drawLeaf(Canvas canvas, Offset pos) {
+    final path = Path()
+      ..moveTo(pos.dx, pos.dy - 5)
+      ..quadraticBezierTo(pos.dx + 5, pos.dy, pos.dx, pos.dy + 5)
+      ..quadraticBezierTo(pos.dx - 5, pos.dy, pos.dx, pos.dy - 5)
+      ..close();
+    canvas.drawPath(path, Paint()..color = const Color(0xFF66BB6A));
+    canvas.drawLine(
+      pos + const Offset(0, -4),
+      pos + const Offset(0, 4),
+      Paint()
+        ..color = const Color(0xFF388E3C)
+        ..strokeWidth = 0.8
+        ..style = PaintingStyle.stroke,
+    );
+  }
+
+  void _drawStar(Canvas canvas, Offset pos) {
+    const outerR = 5.0;
+    const innerR = 2.5;
+    const pts = 5;
+    final path = Path();
+    for (int i = 0; i < pts * 2; i++) {
+      final angle = i * math.pi / pts - math.pi / 2;
+      final r = i.isEven ? outerR : innerR;
+      final p = Offset(
+          pos.dx + math.cos(angle) * r, pos.dy + math.sin(angle) * r);
+      if (i == 0) {
+        path.moveTo(p.dx, p.dy);
+      } else {
+        path.lineTo(p.dx, p.dy);
+      }
+    }
+    path.close();
+    canvas.drawPath(path, Paint()..color = const Color(0xFFE0F7FA));
+    canvas.drawPath(
+      path,
+      Paint()
+        ..color = const Color(0xFF80DEEA)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 0.8,
     );
   }
 

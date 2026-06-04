@@ -988,20 +988,63 @@ class _FireflyPainter extends CustomPainter {
   }
 
   void _drawJar(Canvas canvas, ToolRenderData tool, double jarRadius) {
-    canvas.drawCircle(
-      tool.position,
-      jarRadius,
-      Paint()
-        ..color = primaryColor.withValues(alpha: 0.08)
-        ..style = PaintingStyle.fill,
+    final pos = tool.position;
+
+    // Catch-area ghost (unchanged)
+    canvas.drawCircle(pos, jarRadius, Paint()
+      ..color = primaryColor.withValues(alpha: 0.08)
+      ..style = PaintingStyle.fill);
+    canvas.drawCircle(pos, jarRadius, Paint()
+      ..color = primaryColor.withValues(alpha: 0.55)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.0);
+
+    // Visual mason jar (smaller than catch radius)
+    const bodyW = 20.0;
+    const bodyH = 28.0;
+    const bodyOffY = 4.0; // shift down so mouth is near pos
+    const neckW = 13.0;
+    const neckH = 7.0;
+    const rimW = 16.0;
+    const rimH = 3.0;
+
+    final bodyTop = pos.dy - bodyH / 2 + bodyOffY;
+
+    final bodyRect = RRect.fromRectAndRadius(
+      Rect.fromCenter(center: Offset(pos.dx, pos.dy + bodyOffY), width: bodyW, height: bodyH),
+      const Radius.circular(5),
     );
-    canvas.drawCircle(
-      tool.position,
-      jarRadius,
+    final neckRect = RRect.fromRectAndRadius(
+      Rect.fromLTWH(pos.dx - neckW / 2, bodyTop - neckH, neckW, neckH),
+      const Radius.circular(2),
+    );
+    final rimRect = Rect.fromLTWH(
+        pos.dx - rimW / 2, bodyTop - neckH - rimH, rimW, rimH);
+
+    final glassFill = Paint()
+      ..color = const Color(0xFFE1F5FE).withValues(alpha: 0.35);
+    final glassBorder = Paint()
+      ..color = primaryColor.withValues(alpha: 0.60)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.5;
+    final metalPaint = Paint()
+      ..color = const Color(0xFF90A4AE).withValues(alpha: 0.85);
+
+    canvas.drawRRect(bodyRect, glassFill);
+    canvas.drawRRect(bodyRect, glassBorder);
+    canvas.drawRRect(neckRect, glassFill);
+    canvas.drawRRect(neckRect, glassBorder);
+    canvas.drawRect(rimRect, metalPaint);
+
+    // Glass highlight: thin reflection line on left inner edge
+    canvas.drawLine(
+      Offset(pos.dx - bodyW / 2 + 3, bodyTop + 3),
+      Offset(pos.dx - bodyW / 2 + 3, pos.dy + bodyOffY + bodyH / 2 - 5),
       Paint()
-        ..color = primaryColor.withValues(alpha: 0.55)
+        ..color = Colors.white.withValues(alpha: 0.45)
+        ..strokeWidth = 2.0
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 2.0,
+        ..strokeCap = StrokeCap.round,
     );
   }
 
