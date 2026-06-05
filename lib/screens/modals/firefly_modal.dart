@@ -668,15 +668,36 @@ class _FireflyModalState extends State<FireflyModal>
     int? bestTool;
     double bestDist = double.infinity;
     for (final tool in snap.tools) {
-      final r = tool.type == FireflyRole.lamp ? snap.lampRadius : snap.jarCatchRadius;
-      final touchR = math.max(r, _canvasWidth * 0.12);
       final dist = (pos - tool.position).distance;
-      if (dist <= touchR && dist < bestDist) {
+      bool hit;
+      if (tool.type == FireflyRole.lamp) {
+        final touchR = math.max(snap.lampRadius, _canvasWidth * 0.12);
+        hit = dist <= touchR;
+      } else {
+        final r = snap.jarCatchRadius;
+        hit = _jarRect(tool.position, r).contains(pos);
+      }
+      if (hit && dist < bestDist) {
         bestDist = dist;
         bestTool = tool.id;
       }
     }
     return bestTool;
+  }
+
+  /// Rectangle matching the visual jar shape (with 8px touch padding).
+  static Rect _jarRect(Offset center, double r) {
+    final bodyW = r * 1.50;
+    final bodyH = r * 1.40;
+    final bodyOffY = r * 0.25;
+    final neckH = r * 0.38;
+    final rimH = r * 0.16;
+    final top = center.dy + bodyOffY - bodyH / 2 - neckH - rimH;
+    final bottom = center.dy + bodyOffY + bodyH / 2;
+    return Rect.fromLTRB(
+      center.dx - bodyW / 2 - 8, top - 8,
+      center.dx + bodyW / 2 + 8, bottom + 8,
+    );
   }
 
   void _onPointerDown(PointerDownEvent e) {
@@ -989,34 +1010,27 @@ class _FireflyPainter extends CustomPainter {
 
   void _drawJar(Canvas canvas, ToolRenderData tool, double jarRadius) {
     final pos = tool.position;
+    final r = jarRadius;
 
-    // Catch-area ghost (unchanged)
-    canvas.drawCircle(pos, jarRadius, Paint()
-      ..color = primaryColor.withValues(alpha: 0.08)
-      ..style = PaintingStyle.fill);
-    canvas.drawCircle(pos, jarRadius, Paint()
-      ..color = primaryColor.withValues(alpha: 0.55)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.0);
+    // Scale all dimensions to fill the old catch-circle area (diameter ≈ 2r)
+    final bodyW   = r * 1.50;
+    final bodyH   = r * 1.40;
+    final bodyOffY = r * 0.25;   // shift body center down so jar mouth is near pos
+    final neckW   = r * 0.90;
+    final neckH   = r * 0.38;
+    final rimW    = r * 1.10;
+    final rimH    = r * 0.16;
 
-    // Visual mason jar (smaller than catch radius)
-    const bodyW = 20.0;
-    const bodyH = 28.0;
-    const bodyOffY = 4.0; // shift down so mouth is near pos
-    const neckW = 13.0;
-    const neckH = 7.0;
-    const rimW = 16.0;
-    const rimH = 3.0;
-
-    final bodyTop = pos.dy - bodyH / 2 + bodyOffY;
+    final bodyCenter = Offset(pos.dx, pos.dy + bodyOffY);
+    final bodyTop = bodyCenter.dy - bodyH / 2;
 
     final bodyRect = RRect.fromRectAndRadius(
-      Rect.fromCenter(center: Offset(pos.dx, pos.dy + bodyOffY), width: bodyW, height: bodyH),
-      const Radius.circular(5),
+      Rect.fromCenter(center: bodyCenter, width: bodyW, height: bodyH),
+      Radius.circular(r * 0.18),
     );
     final neckRect = RRect.fromRectAndRadius(
       Rect.fromLTWH(pos.dx - neckW / 2, bodyTop - neckH, neckW, neckH),
-      const Radius.circular(2),
+      Radius.circular(r * 0.08),
     );
     final rimRect = Rect.fromLTWH(
         pos.dx - rimW / 2, bodyTop - neckH - rimH, rimW, rimH);
@@ -1038,11 +1052,11 @@ class _FireflyPainter extends CustomPainter {
 
     // Glass highlight: thin reflection line on left inner edge
     canvas.drawLine(
-      Offset(pos.dx - bodyW / 2 + 3, bodyTop + 3),
-      Offset(pos.dx - bodyW / 2 + 3, pos.dy + bodyOffY + bodyH / 2 - 5),
+      Offset(pos.dx - bodyW / 2 + r * 0.15, bodyTop + r * 0.10),
+      Offset(pos.dx - bodyW / 2 + r * 0.15, bodyCenter.dy + bodyH / 2 - r * 0.18),
       Paint()
         ..color = Colors.white.withValues(alpha: 0.45)
-        ..strokeWidth = 2.0
+        ..strokeWidth = r * 0.07
         ..style = PaintingStyle.stroke
         ..strokeCap = StrokeCap.round,
     );
