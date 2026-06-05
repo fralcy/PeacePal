@@ -222,6 +222,7 @@ abstract class AppLocalizations {
   String get endless;
   String get target;
   String get catchTarget;
+  String get goalAchievement;
 
   // Painting Room
   String get art;

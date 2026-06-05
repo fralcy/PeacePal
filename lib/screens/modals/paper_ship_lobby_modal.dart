@@ -24,6 +24,12 @@ import '../../core/widgets/app_slider.dart';
 import 'paper_ship_modal.dart';
 
 // ──────────────────────────────────────────────────────────────
+// Goal type
+// ──────────────────────────────────────────────────────────────
+
+enum _GoalType { achievement, time, points }
+
+// ──────────────────────────────────────────────────────────────
 // FSM States
 // ──────────────────────────────────────────────────────────────
 
@@ -158,7 +164,8 @@ class _PaperShipLobbyModalState extends State<PaperShipLobbyModal> {
   bool _transitioning = false;
 
   // ── Config ───────────────────────────────────────────────────
-  int _scoreTarget = 0;
+  _GoalType _goalType = _GoalType.achievement;
+  int _goalValue = 0;
 
   // ── Metadata ─────────────────────────────────────────────────
   bool _gameStarted = false;
@@ -327,15 +334,15 @@ class _PaperShipLobbyModalState extends State<PaperShipLobbyModal> {
     if (_gameStarted) return;
     SfxService().buttonClick();
     final seed = math.Random().nextInt(0x7FFFFFFF);
-    _openGame({'seed': seed, 'scoreTarget': _scoreTarget});
+    _openGame({'seed': seed, 'goalType': _goalType.name, 'goalValue': _goalValue});
   }
 
   void _onStartGame() {
     if (_gameStarted) return;
     final seed = math.Random().nextInt(0x7FFFFFFF);
-    context.read<GameRoomProvider>().startGame({'seed': seed, 'scoreTarget': _scoreTarget});
+    context.read<GameRoomProvider>().startGame({'seed': seed, 'goalType': _goalType.name, 'goalValue': _goalValue});
     SfxService().buttonClick();
-    _openGame({'seed': seed, 'scoreTarget': _scoreTarget});
+    _openGame({'seed': seed, 'goalType': _goalType.name, 'goalValue': _goalValue});
   }
 
   // ─────────────────────────────────────────────────────────────
@@ -514,7 +521,8 @@ class _PaperShipLobbyModalState extends State<PaperShipLobbyModal> {
     if (_gameStarted) return;
     _gameStarted = true;
     final seed = gs['seed'] as int? ?? 0;
-    final scoreTarget = gs['scoreTarget'] as int? ?? 0;
+    final goalType = gs['goalType'] as String? ?? '';
+    final goalValue = gs['goalValue'] as int? ?? 0;
     final isHostOrSolo = LanService().role == LanRole.host || !LanService().isActive;
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
@@ -530,7 +538,8 @@ class _PaperShipLobbyModalState extends State<PaperShipLobbyModal> {
           seed: seed,
           localSlot: localSlot.clamp(1, 4),
           playerOrder: playerOrder,
-          scoreTarget: scoreTarget,
+          goalType: goalType,
+          goalValue: goalValue,
         );
         if (!mounted) return;
         _gameStarted = false;
@@ -546,7 +555,8 @@ class _PaperShipLobbyModalState extends State<PaperShipLobbyModal> {
           seed: seed,
           localSlot: localSlot.clamp(1, 4),
           playerOrder: playerOrder,
-          scoreTarget: scoreTarget,
+          goalType: goalType,
+          goalValue: goalValue,
         );
         if (!mounted) return;
         _gameStarted = false;
@@ -614,7 +624,7 @@ class _PaperShipLobbyModalState extends State<PaperShipLobbyModal> {
             style: AppTypography.bodyMedium(context,
                 color: theme.text, fontWeight: FontWeight.bold)),
         const SizedBox(height: 10),
-        _buildScoreTargetConfig(theme, l10n),
+        _buildGoalConfig(theme, l10n),
         const SizedBox(height: 10),
         AppButton(label: l10n.start, onPressed: _onStartSolo),
 
@@ -851,18 +861,73 @@ class _PaperShipLobbyModalState extends State<PaperShipLobbyModal> {
     );
   }
 
-  Widget _buildScoreTargetConfig(AppTheme theme, AppLocalizations l10n) {
-    return AppSlider(
+  Widget _buildGoalConfig(AppTheme theme, AppLocalizations l10n) {
+    final types = [
+      (_GoalType.achievement, l10n.goalAchievement),
+      (_GoalType.time, l10n.time),
+      (_GoalType.points, l10n.points),
+    ];
+    final (min, max, step) = switch (_goalType) {
+      _GoalType.achievement => (0.0, 1000.0, 200.0),
+      _GoalType.time        => (0.0, 600.0,  60.0),
+      _GoalType.points      => (0.0, 50.0,   5.0),
+    };
+    final sliderLabel = _goalValue == 0
+        ? l10n.endless
+        : switch (_goalType) {
+            _GoalType.achievement => '$_goalValue cm',
+            _GoalType.time        => _formatGoalTime(_goalValue),
+            _GoalType.points      => '$_goalValue pts',
+          };
+    return Column(
       key: _sliderKey,
-      label: _scoreTarget == 0
-          ? l10n.endless
-          : '${l10n.target}: $_scoreTarget cm',
-      value: _scoreTarget.toDouble(),
-      min: 0,
-      max: 1000,
-      onChanged: (v) =>
-          setState(() => _scoreTarget = (v / 200).round() * 200),
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: types.map((t) {
+            final (type, label) = t;
+            return Expanded(
+              child: GestureDetector(
+                onTap: () => setState(() { _goalType = type; _goalValue = 0; }),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Radio<_GoalType>(
+                      value: type,
+                      groupValue: _goalType,
+                      onChanged: (v) => setState(() { _goalType = v!; _goalValue = 0; }),
+                      activeColor: theme.primary,
+                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      visualDensity: VisualDensity.compact,
+                    ),
+                    Flexible(
+                      child: Text(label,
+                          style: AppTypography.bodySmall(context, color: theme.text),
+                          overflow: TextOverflow.ellipsis),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+        const SizedBox(height: 4),
+        AppSlider(
+          label: sliderLabel,
+          value: _goalValue.toDouble().clamp(min, max),
+          min: min,
+          max: max,
+          onChanged: (v) =>
+              setState(() => _goalValue = (v / step).round() * step.toInt()),
+        ),
+      ],
     );
+  }
+
+  String _formatGoalTime(int seconds) {
+    final m = seconds ~/ 60;
+    final s = seconds % 60;
+    return m > 0 ? (s == 0 ? '${m}m' : '${m}m ${s}s') : '${s}s';
   }
 
   Widget _buildHostLobby(AppTheme theme, AppLocalizations l10n, GameRoomProvider room) {
@@ -884,7 +949,7 @@ class _PaperShipLobbyModalState extends State<PaperShipLobbyModal> {
           _buildPendingList(theme, l10n, room, currentRoom!),
         ],
         const SizedBox(height: 20),
-        _buildScoreTargetConfig(theme, l10n),
+        _buildGoalConfig(theme, l10n),
         const SizedBox(height: 12),
         _buildButtonRow(theme, l10n,
           rowKey: _startKey,

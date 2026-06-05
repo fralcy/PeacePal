@@ -25,6 +25,12 @@ import '../../core/utils/firefly_world.dart' show FireflyRole;
 import 'firefly_modal.dart';
 
 // ──────────────────────────────────────────────────────────────
+// Goal type
+// ──────────────────────────────────────────────────────────────
+
+enum _GoalType { achievement, time, points }
+
+// ──────────────────────────────────────────────────────────────
 // FSM States (mirrors rock balancing lobby)
 // ──────────────────────────────────────────────────────────────
 
@@ -205,7 +211,8 @@ class _FireflyLobbyModalState extends State<FireflyLobbyModal> {
 
   // ── Config ───────────────────────────────────────────────
   int _fireflyCount = 10;
-  int _scoreTarget = 0;
+  _GoalType _goalType = _GoalType.achievement;
+  int _goalValue = 0;
   FireflyRole _hostRole = FireflyRole.lamp;
   FireflyRole _clientRole = FireflyRole.jar; // client's chosen role
   bool _gameStarted = false;
@@ -441,7 +448,8 @@ class _FireflyLobbyModalState extends State<FireflyLobbyModal> {
       'fireflySeed': seed,
       'playerOrder': playerOrder,
       'roles': roles,
-      'scoreTarget': _scoreTarget,
+      'goalType': _goalType.name,
+      'goalValue': _goalValue,
     });
     SfxService().buttonClick();
     _openGame({
@@ -449,7 +457,8 @@ class _FireflyLobbyModalState extends State<FireflyLobbyModal> {
       'fireflySeed': seed,
       'playerOrder': playerOrder,
       'roles': roles,
-      'scoreTarget': _scoreTarget,
+      'goalType': _goalType.name,
+      'goalValue': _goalValue,
     });
   }
 
@@ -607,7 +616,8 @@ class _FireflyLobbyModalState extends State<FireflyLobbyModal> {
     _gameStarted = true;
     final count = gs['maxOnScreen'] as int? ?? _fireflyCount;
     final seed = gs['fireflySeed'] as int? ?? 0;
-    final scoreTarget = gs['scoreTarget'] as int? ?? 0;
+    final goalType = gs['goalType'] as String? ?? '';
+    final goalValue = gs['goalValue'] as int? ?? 0;
     final playerOrder = (gs['playerOrder'] as List<dynamic>? ?? []).cast<String>();
 
     final rolesRaw = gs['roles'] as Map<String, dynamic>? ?? {};
@@ -652,7 +662,8 @@ class _FireflyLobbyModalState extends State<FireflyLobbyModal> {
             localToolId: localToolId,
             playerOrder: playerOrder,
             allRoles: allRoles,
-            scoreTarget: scoreTarget);
+            goalType: goalType,
+            goalValue: goalValue);
         if (!mounted) return;
         _gameStarted = false;
         if (LanService().isActive) {
@@ -669,7 +680,8 @@ class _FireflyLobbyModalState extends State<FireflyLobbyModal> {
             localToolId: localToolId,
             playerOrder: playerOrder,
             allRoles: allRoles,
-            scoreTarget: scoreTarget);
+            goalType: goalType,
+            goalValue: goalValue);
         if (!mounted) return;
         _gameStarted = false;
         setState(() => _state =
@@ -682,7 +694,7 @@ class _FireflyLobbyModalState extends State<FireflyLobbyModal> {
     if (_gameStarted) return;
     SfxService().buttonClick();
     final seed = DateTime.now().millisecondsSinceEpoch;
-    _openGame({'maxOnScreen': _fireflyCount, 'fireflySeed': seed, 'playerOrder': <String>[], 'scoreTarget': _scoreTarget});
+    _openGame({'maxOnScreen': _fireflyCount, 'fireflySeed': seed, 'playerOrder': <String>[], 'goalType': _goalType.name, 'goalValue': _goalValue});
   }
 
   // ─────────────────────────────────────────────────────────
@@ -748,16 +760,7 @@ class _FireflyLobbyModalState extends State<FireflyLobbyModal> {
         const SizedBox(height: 10),
         _buildFireflyCountConfig(theme, l10n),
         const SizedBox(height: 8),
-        AppSlider(
-          label: _scoreTarget == 0
-              ? l10n.endless
-              : '${l10n.target}: ${l10n.catchTarget} $_scoreTarget',
-          value: _scoreTarget.toDouble(),
-          min: 0,
-          max: 250,
-          onChanged: (v) =>
-              setState(() => _scoreTarget = (v / 50).round() * 50),
-        ),
+        _buildGoalConfig(theme, l10n),
         const SizedBox(height: 10),
         AppButton(label: l10n.startGame, onPressed: _onStartSolo),
         const Padding(padding: EdgeInsets.symmetric(vertical: 14), child: Divider()),
@@ -990,6 +993,8 @@ class _FireflyLobbyModalState extends State<FireflyLobbyModal> {
         ],
         const SizedBox(height: 20),
         _buildFireflyCountConfig(theme, l10n),
+        const SizedBox(height: 8),
+        _buildGoalConfig(theme, l10n),
         const SizedBox(height: 12),
         _buildRoleSelector(theme, l10n),
         const SizedBox(height: 16),
@@ -1085,6 +1090,72 @@ class _FireflyLobbyModalState extends State<FireflyLobbyModal> {
         ),
       ],
     );
+  }
+
+  Widget _buildGoalConfig(AppTheme theme, AppLocalizations l10n) {
+    final types = [
+      (_GoalType.achievement, l10n.goalAchievement),
+      (_GoalType.time, l10n.time),
+      (_GoalType.points, l10n.points),
+    ];
+    final (min, max, step) = switch (_goalType) {
+      _GoalType.achievement || _GoalType.points => (0.0, 250.0, 50.0),
+      _GoalType.time                            => (0.0, 600.0, 60.0),
+    };
+    final sliderLabel = _goalValue == 0
+        ? l10n.endless
+        : switch (_goalType) {
+            _GoalType.achievement || _GoalType.points => '$_goalValue',
+            _GoalType.time                            => _formatGoalTime(_goalValue),
+          };
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: types.map((t) {
+            final (type, label) = t;
+            return Expanded(
+              child: GestureDetector(
+                onTap: () => setState(() { _goalType = type; _goalValue = 0; }),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Radio<_GoalType>(
+                      value: type,
+                      groupValue: _goalType,
+                      onChanged: (v) => setState(() { _goalType = v!; _goalValue = 0; }),
+                      activeColor: theme.primary,
+                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      visualDensity: VisualDensity.compact,
+                    ),
+                    Flexible(
+                      child: Text(label,
+                          style: AppTypography.bodySmall(context, color: theme.text),
+                          overflow: TextOverflow.ellipsis),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+        const SizedBox(height: 4),
+        AppSlider(
+          label: sliderLabel,
+          value: _goalValue.toDouble().clamp(min, max),
+          min: min,
+          max: max,
+          onChanged: (v) =>
+              setState(() => _goalValue = (v / step).round() * step.toInt()),
+        ),
+      ],
+    );
+  }
+
+  String _formatGoalTime(int seconds) {
+    final m = seconds ~/ 60;
+    final s = seconds % 60;
+    return m > 0 ? (s == 0 ? '${m}m' : '${m}m ${s}s') : '${s}s';
   }
 
   Widget _buildClientRoleSelector(AppTheme theme, AppLocalizations l10n) {

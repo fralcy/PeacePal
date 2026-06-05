@@ -423,6 +423,7 @@ class AppLocalizationsVi extends AppLocalizations {
   @override String get endless => 'Không giới hạn';
   @override String get target => 'Mục tiêu';
   @override String get catchTarget => 'bắt';
+  @override String get goalAchievement => 'Thành tích';
 
   // Painting Room
   @override

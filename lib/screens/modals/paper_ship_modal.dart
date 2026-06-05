@@ -25,16 +25,18 @@ import '../../core/widgets/app_modal.dart';
 
 class PaperShipModal extends StatefulWidget {
   final int seed;
-  final int localSlot;          // 1-based player slot
+  final int localSlot;            // 1-based player slot
   final List<String> playerOrder; // uid list in slot order; empty = solo
-  final int scoreTarget;          // 0 = endless
+  final String goalType;          // 'achievement' | 'time' | 'points' | ''
+  final int goalValue;            // 0 = endless for selected type
 
   const PaperShipModal({
     super.key,
     required this.seed,
     this.localSlot = 1,
     this.playerOrder = const [],
-    this.scoreTarget = 0,
+    this.goalType = '',
+    this.goalValue = 0,
   });
 
   @override
@@ -45,7 +47,8 @@ class PaperShipModal extends StatefulWidget {
     required int seed,
     int localSlot = 1,
     List<String> playerOrder = const [],
-    int scoreTarget = 0,
+    String goalType = '',
+    int goalValue = 0,
   }) {
     final size = MediaQuery.of(context).size;
     if (size.width >= 720 && size.width > size.height && size.height >= 600) {
@@ -53,7 +56,8 @@ class PaperShipModal extends StatefulWidget {
           seed: seed,
           localSlot: localSlot,
           playerOrder: playerOrder,
-          scoreTarget: scoreTarget);
+          goalType: goalType,
+          goalValue: goalValue);
     }
     final h = size.height * 0.95;
     final l10n = AppLocalizations.of(context);
@@ -92,7 +96,8 @@ class PaperShipModal extends StatefulWidget {
         seed: seed,
         localSlot: localSlot,
         playerOrder: playerOrder,
-        scoreTarget: scoreTarget,
+        goalType: goalType,
+        goalValue: goalValue,
       ),
     );
   }
@@ -102,7 +107,8 @@ class PaperShipModal extends StatefulWidget {
     required int seed,
     int localSlot = 1,
     List<String> playerOrder = const [],
-    int scoreTarget = 0,
+    String goalType = '',
+    int goalValue = 0,
   }) {
     final l10n = AppLocalizations.of(context);
     final size = MediaQuery.of(context).size;
@@ -149,7 +155,8 @@ class PaperShipModal extends StatefulWidget {
               seed: seed,
               localSlot: localSlot,
               playerOrder: playerOrder,
-              scoreTarget: scoreTarget,
+              goalType: goalType,
+              goalValue: goalValue,
             ),
           ),
         ),
@@ -184,7 +191,7 @@ class _PaperShipModalState extends State<PaperShipModal>
         TutorialStep(
           targetKey: _infoBarKey,
           title: l10n.tutorialPaperShipGameInfoTitle,
-          description: widget.scoreTarget > 0
+          description: widget.goalValue > 0
               ? l10n.tutorialPaperShipGameInfoTargetDesc
               : l10n.tutorialPaperShipGameInfoDesc,
           tag: 'paper_ship_info',
@@ -389,11 +396,18 @@ class _PaperShipModalState extends State<PaperShipModal>
       _accumulator -= _fixedDt;
     }
 
-    // Auto-end when distance target reached (host/solo only)
-    if (!_gameEnded && widget.scoreTarget > 0 && (_isHost || _isSolo) &&
-        _worldReady && _canvasHeight > 0 &&
-        _world.buildRenderData().distanceTraveled / _canvasHeight * 100 >= widget.scoreTarget) {
-      _triggerAutoEnd();
+    // Auto-end when goal reached (host/solo only)
+    if (!_gameEnded && widget.goalValue > 0 && (_isHost || _isSolo) &&
+        _worldReady && _canvasHeight > 0) {
+      final snap = _world.buildRenderData();
+      final dist = snap.distanceTraveled / _canvasHeight * 100;
+      final reached = switch (widget.goalType) {
+        'achievement' => dist >= widget.goalValue,
+        'time'        => _elapsedSeconds >= widget.goalValue,
+        'points'      => snap.itemsCollected >= widget.goalValue,
+        _             => false,
+      };
+      if (reached) _triggerAutoEnd();
     }
 
     setState(() {});
@@ -474,9 +488,7 @@ class _PaperShipModalState extends State<PaperShipModal>
               style: AppTypography.bodyLarge(context,
                   color: theme.text, fontWeight: FontWeight.bold)),
           content: Text(
-            widget.scoreTarget > 0
-                ? '${dist.toStringAsFixed(1)} cm  ·  $items pts\n${l10n.time}: ${_formatTime(elapsed)}'
-                : '${dist.toStringAsFixed(1)} cm  ·  $items pts',
+            '${dist.toStringAsFixed(1)} cm  ·  $items pts\n${l10n.time}: ${_formatTime(elapsed)}',
             style: AppTypography.bodyMedium(context, color: theme.text),
           ),
           actions: [
@@ -512,6 +524,27 @@ class _PaperShipModalState extends State<PaperShipModal>
   }
 
   // ─────────────────────────────────────────────────────────
+  // Info bar text
+  // ─────────────────────────────────────────────────────────
+
+  String _buildInfoText(PaperShipRenderSnapshot snap) {
+    final dist = _canvasHeight > 0
+        ? snap.distanceTraveled / _canvasHeight * 100
+        : 0.0;
+    final distStr = widget.goalType == 'achievement' && widget.goalValue > 0
+        ? '${dist.toStringAsFixed(1)}/${widget.goalValue} cm'
+        : '${dist.toStringAsFixed(1)} cm';
+    final pts = snap.itemsCollected;
+    final ptsStr = widget.goalType == 'points' && widget.goalValue > 0
+        ? '$pts/${widget.goalValue} pts'
+        : '$pts pts';
+    final timeStr = widget.goalType == 'time' && widget.goalValue > 0
+        ? '${_formatTime(_elapsedSeconds)}/${_formatTime(widget.goalValue.toDouble())}'
+        : _formatTime(_elapsedSeconds);
+    return '$distStr  ·  $ptsStr  ·  $timeStr';
+  }
+
+  // ─────────────────────────────────────────────────────────
   // Build
   // ─────────────────────────────────────────────────────────
 
@@ -535,11 +568,7 @@ class _PaperShipModalState extends State<PaperShipModal>
             children: [
               Expanded(
                 child: Text(
-                  snap != null
-                      ? (widget.scoreTarget > 0
-                          ? '${(_canvasHeight > 0 ? snap.distanceTraveled / _canvasHeight * 100 : 0.0).toStringAsFixed(1)}/${widget.scoreTarget} cm  ·  ${snap.itemsCollected} pts  |  ${l10n.time}: ${_formatTime(_elapsedSeconds)}'
-                          : '${(_canvasHeight > 0 ? snap.distanceTraveled / _canvasHeight * 100 : 0.0).toStringAsFixed(1)} cm  ·  ${snap.itemsCollected} pts')
-                      : '0.0 cm',
+                  snap != null ? _buildInfoText(snap) : '0.0 cm',
                   style: AppTypography.bodySmall(context,
                       color: theme.primary, fontWeight: FontWeight.bold),
                   overflow: TextOverflow.ellipsis,

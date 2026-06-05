@@ -421,6 +421,7 @@ class AppLocalizationsEn extends AppLocalizations {
   @override String get endless => 'Endless';
   @override String get target => 'Target';
   @override String get catchTarget => 'catch';
+  @override String get goalAchievement => 'Achievement';
 
   // Painting Room
   @override

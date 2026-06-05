@@ -30,7 +30,8 @@ class FireflyModal extends StatefulWidget {
   final int localToolId;           // 1-based slot (solo: 1 = lamp finger, LAN: player slot)
   final List<String> playerOrder;  // uid list in slot order; empty for solo
   final Map<int, FireflyRole> allRoles; // toolId → initial role; empty = solo
-  final int scoreTarget;           // 0 = endless
+  final String goalType;           // 'achievement' | 'time' | 'points' | ''
+  final int goalValue;             // 0 = endless for selected type
 
   const FireflyModal({
     super.key,
@@ -40,7 +41,8 @@ class FireflyModal extends StatefulWidget {
     this.localToolId = 1,
     this.playerOrder = const [],
     this.allRoles = const {},
-    this.scoreTarget = 0,
+    this.goalType = '',
+    this.goalValue = 0,
   });
 
   @override
@@ -54,7 +56,8 @@ class FireflyModal extends StatefulWidget {
     int localToolId = 1,
     List<String> playerOrder = const [],
     Map<int, FireflyRole> allRoles = const {},
-    int scoreTarget = 0,
+    String goalType = '',
+    int goalValue = 0,
   }) {
     final size = MediaQuery.of(context).size;
     if (size.width >= 720 && size.width > size.height && size.height >= 600) {
@@ -66,7 +69,8 @@ class FireflyModal extends StatefulWidget {
         localToolId: localToolId,
         playerOrder: playerOrder,
         allRoles: allRoles,
-        scoreTarget: scoreTarget,
+        goalType: goalType,
+        goalValue: goalValue,
       );
     }
     final modalKey = GlobalKey<_FireflyModalState>();
@@ -109,7 +113,8 @@ class FireflyModal extends StatefulWidget {
         localToolId: localToolId,
         playerOrder: playerOrder,
         allRoles: allRoles,
-        scoreTarget: scoreTarget,
+        goalType: goalType,
+        goalValue: goalValue,
       ),
     );
   }
@@ -122,7 +127,8 @@ class FireflyModal extends StatefulWidget {
     int localToolId = 1,
     List<String> playerOrder = const [],
     Map<int, FireflyRole> allRoles = const {},
-    int scoreTarget = 0,
+    String goalType = '',
+    int goalValue = 0,
   }) {
     final l10n = AppLocalizations.of(context);
     final size = MediaQuery.of(context).size;
@@ -172,7 +178,8 @@ class FireflyModal extends StatefulWidget {
               localToolId: localToolId,
               playerOrder: playerOrder,
               allRoles: allRoles,
-              scoreTarget: scoreTarget,
+              goalType: goalType,
+              goalValue: goalValue,
             ),
           ),
         ),
@@ -191,7 +198,7 @@ class _FireflyModalState extends State<FireflyModal>
 
   void _showTutorial() {
     final l10n = AppLocalizations.of(context);
-    final caughtDesc = widget.scoreTarget > 0
+    final caughtDesc = widget.goalValue > 0
         ? l10n.tutorialFireflyGameCaughtTargetDesc
         : l10n.tutorialFireflyGameCaughtDesc;
     final List<TutorialStep> steps;
@@ -561,10 +568,15 @@ class _FireflyModalState extends State<FireflyModal>
           _sendCatchEvent(id, _localId);
         }
       }
-      // Auto-end when score target reached
-      if (!_gameEnded && widget.scoreTarget > 0 &&
-          _worldReady && _world.buildRenderData().totalCaught >= widget.scoreTarget) {
-        _triggerAutoEnd();
+      // Auto-end when goal reached
+      if (!_gameEnded && widget.goalValue > 0 && _worldReady) {
+        final caught = _world.buildRenderData().totalCaught;
+        final reached = switch (widget.goalType) {
+          'achievement' || 'points' => caught >= widget.goalValue,
+          'time'                    => _elapsedSeconds >= widget.goalValue,
+          _                         => false,
+        };
+        if (reached) _triggerAutoEnd();
       }
     }
 
@@ -624,9 +636,7 @@ class _FireflyModalState extends State<FireflyModal>
               style: AppTypography.bodyLarge(context,
                   color: theme.text, fontWeight: FontWeight.bold)),
           content: Text(
-            widget.scoreTarget > 0
-                ? '${l10n.caught}: $caughtCount\n${l10n.time}: ${_formatTime(elapsed)}'
-                : '${l10n.caught}: $caughtCount',
+            '${l10n.caught}: $caughtCount\n${l10n.time}: ${_formatTime(elapsed)}',
             style: AppTypography.bodyMedium(context, color: theme.text),
           ),
           actions: [
@@ -768,6 +778,21 @@ class _FireflyModalState extends State<FireflyModal>
       );
 
   // ─────────────────────────────────────────────────────────
+  // Info bar text
+  // ─────────────────────────────────────────────────────────
+
+  String _buildFireflyInfoText(int caught, AppLocalizations l10n) {
+    final catchStr =
+        (widget.goalType == 'achievement' || widget.goalType == 'points') && widget.goalValue > 0
+            ? '${l10n.caught}: $caught/${widget.goalValue}'
+            : '${l10n.caught}: $caught';
+    final timeStr = widget.goalType == 'time' && widget.goalValue > 0
+        ? '${_formatTime(_elapsedSeconds)}/${_formatTime(widget.goalValue.toDouble())}'
+        : _formatTime(_elapsedSeconds);
+    return '$catchStr  |  ${l10n.time}: $timeStr';
+  }
+
+  // ─────────────────────────────────────────────────────────
   // Build
   // ─────────────────────────────────────────────────────────
 
@@ -792,9 +817,7 @@ class _FireflyModalState extends State<FireflyModal>
               Expanded(
                 child: Text(
                   key: _caughtKey,
-                  widget.scoreTarget > 0
-                      ? '${l10n.caught}: ${snap?.totalCaught ?? 0}/${widget.scoreTarget}  |  ${l10n.time}: ${_formatTime(_elapsedSeconds)}'
-                      : '${l10n.caught}: ${snap?.totalCaught ?? 0}',
+                  _buildFireflyInfoText(snap?.totalCaught ?? 0, l10n),
                   style: AppTypography.bodySmall(context,
                       color: theme.primary, fontWeight: FontWeight.bold),
                   overflow: TextOverflow.ellipsis,
