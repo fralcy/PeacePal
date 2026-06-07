@@ -147,6 +147,24 @@ class AchievementProvider extends ChangeNotifier {
   }
 
   // ----------------------------------------------------------
+  // Debug helpers
+  // ----------------------------------------------------------
+
+  Future<void> debugToggleAchievement(String id) async {
+    final p = progress;
+    if (p.isUnlocked(id)) {
+      p.unlockedIds.remove(id);
+      p.unlockedAt.remove(id);
+      p.newlyUnlocked.remove(id);
+    } else {
+      p.unlockedIds.add(id);
+      p.unlockedAt[id] = DateTime.now().millisecondsSinceEpoch;
+    }
+    await DataManager().saveAchievementProgress(p);
+    refresh();
+  }
+
+  // ----------------------------------------------------------
   // Internal helpers
   // ----------------------------------------------------------
 

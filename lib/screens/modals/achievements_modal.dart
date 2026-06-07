@@ -7,6 +7,7 @@ import '../../core/constants/app_typography.dart';
 import '../../core/l10n/app_localizations.dart';
 import '../../core/models/display_item_group.dart';
 import '../../core/providers/achievement_provider.dart';
+import '../../core/utils/auth_service.dart';
 import '../../core/utils/display_item_service.dart';
 import '../../core/providers/score_provider.dart';
 import '../../core/utils/achievement_service.dart';
@@ -62,10 +63,29 @@ class AchievementsModal {
 
 // ─────────────────────────────────────────────────────────────────────────────
 
-class _AchievementsContent extends StatelessWidget {
+class _AchievementsContent extends StatefulWidget {
   final void Function(String featureId)? onNavigate;
 
   const _AchievementsContent({this.onNavigate});
+
+  @override
+  State<_AchievementsContent> createState() => _AchievementsContentState();
+}
+
+class _AchievementsContentState extends State<_AchievementsContent> {
+  bool _isDebugMode = false;
+  final _authService = AuthService();
+
+  @override
+  void initState() {
+    super.initState();
+    _checkDebugMode();
+  }
+
+  Future<void> _checkDebugMode() async {
+    final isDebug = await _authService.isDebugMode;
+    if (mounted) setState(() => _isDebugMode = isDebug);
+  }
 
   static const _categoryOrder = [
     AchievementCategory.schedule,
@@ -229,11 +249,11 @@ class _AchievementsContent extends StatelessWidget {
               style: AppTypography.labelSmall(context, color: theme.text),
             ),
             const Spacer(),
-            if (onNavigate != null && featureId != null)
+            if (widget.onNavigate != null && featureId != null)
               GestureDetector(
                 onTap: () {
                   Navigator.of(context).pop();
-                  onNavigate!(featureId);
+                  widget.onNavigate!(featureId);
                 },
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
@@ -257,11 +277,12 @@ class _AchievementsContent extends StatelessWidget {
           decoration: BoxDecoration(
             color: theme.background,
             borderRadius: context.shapes.medium.borderRadius as BorderRadius,
-            border: Border.all(color: theme.border),
+            border: Border.all(color: _isDebugMode ? Colors.deepPurple : theme.border),
           ),
           child: Row(
             children: List.generate(4, (i) {
               final slotTier = i + 1;
+              final achId = group.achievementIds[i];
               return Expanded(
                 child: Padding(
                   padding: EdgeInsets.symmetric(horizontal: i == 0 || i == 3 ? 4 : 3),
@@ -269,8 +290,12 @@ class _AchievementsContent extends StatelessWidget {
                     group: group,
                     slotTier: slotTier,
                     isUnlocked: tier >= slotTier,
-                    achievementId: group.achievementIds[i],
+                    achievementId: achId,
                     l10n: l10n,
+                    isDebugMode: _isDebugMode,
+                    onDebugTap: _isDebugMode
+                        ? () => context.read<AchievementProvider>().debugToggleAchievement(achId)
+                        : null,
                   ),
                 ),
               );
@@ -319,6 +344,10 @@ class _AchievementsContent extends StatelessWidget {
               achievement: ach,
               isUnlocked: progress.isUnlocked(ach.id),
               unlockedAtMs: progress.unlockedAt[ach.id],
+              isDebugMode: _isDebugMode,
+              onDebugTap: _isDebugMode
+                  ? () => context.read<AchievementProvider>().debugToggleAchievement(ach.id)
+                  : null,
             )),
       ],
     );
@@ -398,6 +427,8 @@ class _ShelfSlot extends StatelessWidget {
   final bool isUnlocked;
   final String achievementId;
   final AppLocalizations l10n;
+  final bool isDebugMode;
+  final VoidCallback? onDebugTap;
 
   const _ShelfSlot({
     required this.group,
@@ -405,6 +436,8 @@ class _ShelfSlot extends StatelessWidget {
     required this.isUnlocked,
     required this.achievementId,
     required this.l10n,
+    this.isDebugMode = false,
+    this.onDebugTap,
   });
 
   @override
@@ -412,43 +445,54 @@ class _ShelfSlot extends StatelessWidget {
     final theme = context.theme;
     final assetPath = AppAssets.displayItemAsset(group, slotTier);
 
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        AspectRatio(
-          aspectRatio: 1,
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              // Item image (or placeholder) — locked = dark silhouette
-              ColorFiltered(
-                colorFilter: isUnlocked
-                    ? const ColorFilter.mode(Colors.transparent, BlendMode.dst)
-                    : const ColorFilter.matrix([
-                        0, 0, 0, 0, 0.12,
-                        0, 0, 0, 0, 0.12,
-                        0, 0, 0, 0, 0.12,
-                        0, 0, 0, 1, 0,
-                      ]),
-                child: Image.asset(
-                  assetPath,
-                  fit: BoxFit.contain,
-                  errorBuilder: (ctx, err, st) => _buildImagePlaceholder(theme),
-                ),
-              ),
-            ],
+    final image = ColorFiltered(
+      colorFilter: isUnlocked
+          ? const ColorFilter.mode(Colors.transparent, BlendMode.dst)
+          : const ColorFilter.matrix([
+              0, 0, 0, 0, 0.12,
+              0, 0, 0, 0, 0.12,
+              0, 0, 0, 0, 0.12,
+              0, 0, 0, 1, 0,
+            ]),
+      child: Image.asset(
+        assetPath,
+        fit: BoxFit.contain,
+        errorBuilder: (ctx, err, st) => _buildImagePlaceholder(theme),
+      ),
+    );
+
+    return GestureDetector(
+      onLongPress: onDebugTap,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          AspectRatio(
+            aspectRatio: 1,
+            child: isDebugMode
+                ? Container(
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: Colors.deepPurple.withValues(alpha: 0.5),
+                        width: 1.5,
+                        strokeAlign: BorderSide.strokeAlignOutside,
+                      ),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: image,
+                  )
+                : image,
           ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          l10n.achievementTitle(achievementId),
-          textAlign: TextAlign.center,
-          maxLines: 2,
-          overflow: TextOverflow.ellipsis,
-          style: AppTypography.bodySmall(context,
-              color: isUnlocked ? theme.text : theme.border),
-        ),
-      ],
+          const SizedBox(height: 4),
+          Text(
+            l10n.achievementTitle(achievementId),
+            textAlign: TextAlign.center,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: AppTypography.bodySmall(context,
+                color: isUnlocked ? theme.text : theme.border),
+          ),
+        ],
+      ),
     );
   }
 
@@ -483,11 +527,15 @@ class _AchievementCard extends StatelessWidget {
   final Achievement achievement;
   final bool isUnlocked;
   final int? unlockedAtMs;
+  final bool isDebugMode;
+  final VoidCallback? onDebugTap;
 
   const _AchievementCard({
     required this.achievement,
     required this.isUnlocked,
     this.unlockedAtMs,
+    this.isDebugMode = false,
+    this.onDebugTap,
   });
 
   @override
@@ -498,16 +546,20 @@ class _AchievementCard extends StatelessWidget {
     final iconColor = isUnlocked ? theme.primary : theme.border;
     final titleColor = isUnlocked ? theme.text : theme.border;
     final descColor = isUnlocked ? context.onSurfaceVariant : theme.border;
-    final borderColor = isUnlocked ? theme.primary : theme.border;
+    final borderColor = isDebugMode
+        ? Colors.deepPurple.withValues(alpha: 0.5)
+        : isUnlocked ? theme.primary : theme.border;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
-      child: Container(
+      child: GestureDetector(
+        onLongPress: onDebugTap,
+        child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           color: theme.background,
           borderRadius: context.shapes.medium.borderRadius as BorderRadius,
-          border: Border.all(color: borderColor, width: isUnlocked ? 1.5 : 1.0),
+          border: Border.all(color: borderColor, width: isUnlocked || isDebugMode ? 1.5 : 1.0),
         ),
         child: Row(
           children: [
@@ -561,6 +613,7 @@ class _AchievementCard extends StatelessWidget {
               _buildPointsBadge(context, theme, l10n),
           ],
         ),
+      ),
       ),
     );
   }
