@@ -323,24 +323,29 @@ class _DesktopLandscapeScreenState extends State<DesktopLandscapeScreen>
 
     return Consumer<ScoreProvider>(
       builder: (context, scoreProvider, _) {
-        return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-          color: theme.primary,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.monetization_on, size: 18, color: theme.background),
-              const SizedBox(width: 6),
-              Flexible(
-                child: Text(
-                  '${l10n.points}: ${scoreProvider.currentPoints}',
-                  style: AppTypography.labelLarge(context,
-                      color: theme.background, fontWeight: FontWeight.bold),
-                  overflow: TextOverflow.ellipsis,
-                  maxLines: 1,
+        return GestureDetector(
+          onTap: (isDebugMode || kDebugMode)
+              ? () => scoreProvider.addPoints(500)
+              : null,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            color: theme.primary,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.monetization_on, size: 18, color: theme.background),
+                const SizedBox(width: 6),
+                Flexible(
+                  child: Text(
+                    '${l10n.points}: ${scoreProvider.currentPoints}',
+                    style: AppTypography.labelLarge(context,
+                        color: theme.background, fontWeight: FontWeight.bold),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         );
       },

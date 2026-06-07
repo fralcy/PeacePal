@@ -166,7 +166,12 @@ class _AppHeaderState extends State<AppHeader> {
           Semantics(
             label: 'Points: $currentPoints',
             readOnly: true,
-            child: _buildCoinDisplay(currentPoints, theme),
+            child: GestureDetector(
+              onTap: _isDebugMode
+                  ? () => context.read<ScoreProvider>().addPoints(500)
+                  : null,
+              child: _buildCoinDisplay(currentPoints, theme),
+            ),
           ),
           const Spacer(),
           // [Achievement]
