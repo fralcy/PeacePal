@@ -787,7 +787,7 @@ class _FireflyModalState extends State<FireflyModal>
             ? '${l10n.caught}: $caught/${widget.goalValue}'
             : '${l10n.caught}: $caught';
     final timeStr = widget.goalType == 'time' && widget.goalValue > 0
-        ? '${_formatTime(_elapsedSeconds)}/${_formatTime(widget.goalValue.toDouble())}'
+        ? _formatTime((widget.goalValue - _elapsedSeconds).clamp(0.0, widget.goalValue.toDouble()))
         : _formatTime(_elapsedSeconds);
     return '$catchStr  |  ${l10n.time}: $timeStr';
   }

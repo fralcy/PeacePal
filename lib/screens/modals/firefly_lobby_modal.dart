@@ -1093,24 +1093,30 @@ class _FireflyLobbyModalState extends State<FireflyLobbyModal> {
   }
 
   Widget _buildGoalConfig(AppTheme theme, AppLocalizations l10n) {
+    // Firefly: chỉ có 2 tiêu chí — số đom đóm bắt và thời gian
     final types = [
-      (_GoalType.achievement, l10n.goalAchievement),
-      (_GoalType.time, l10n.time),
-      (_GoalType.points, l10n.points),
+      (_GoalType.achievement, l10n.goalCatchCountFull),
+      (_GoalType.time,        l10n.goalTimeFull),
     ];
-    final (min, max, step) = switch (_goalType) {
+    // If current type is points (old state), treat as achievement
+    final effectiveType = _goalType == _GoalType.points ? _GoalType.achievement : _goalType;
+    final (min, max, step) = switch (effectiveType) {
       _GoalType.achievement || _GoalType.points => (0.0, 250.0, 50.0),
       _GoalType.time                            => (0.0, 600.0, 60.0),
     };
     final sliderLabel = _goalValue == 0
         ? l10n.endless
-        : switch (_goalType) {
-            _GoalType.achievement || _GoalType.points => '$_goalValue',
+        : switch (effectiveType) {
+            _GoalType.achievement || _GoalType.points => '${l10n.target}: $_goalValue',
             _GoalType.time                            => _formatGoalTime(_goalValue),
           };
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        Text(l10n.goalEndConditionLabel,
+            style: AppTypography.bodySmall(context,
+                color: theme.border, fontWeight: FontWeight.w600)),
+        const SizedBox(height: 6),
         Row(
           children: types.map((t) {
             final (type, label) = t;
@@ -1122,7 +1128,7 @@ class _FireflyLobbyModalState extends State<FireflyLobbyModal> {
                   children: [
                     Radio<_GoalType>(
                       value: type,
-                      groupValue: _goalType,
+                      groupValue: effectiveType,
                       onChanged: (v) => setState(() { _goalType = v!; _goalValue = 0; }),
                       activeColor: theme.primary,
                       materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
