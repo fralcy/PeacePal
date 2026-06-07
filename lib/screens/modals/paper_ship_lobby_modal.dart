@@ -863,9 +863,9 @@ class _PaperShipLobbyModalState extends State<PaperShipLobbyModal> {
 
   Widget _buildGoalConfig(AppTheme theme, AppLocalizations l10n) {
     final types = [
-      (_GoalType.achievement, l10n.goalAchievement),
-      (_GoalType.time, l10n.time),
-      (_GoalType.points, l10n.points),
+      (_GoalType.achievement, l10n.goalDistanceFull),
+      (_GoalType.points,      l10n.goalItemsFull),
+      (_GoalType.time,        l10n.goalTimeFull),
     ];
     final (min, max, step) = switch (_goalType) {
       _GoalType.achievement => (0.0, 1000.0, 200.0),
@@ -875,14 +875,18 @@ class _PaperShipLobbyModalState extends State<PaperShipLobbyModal> {
     final sliderLabel = _goalValue == 0
         ? l10n.endless
         : switch (_goalType) {
-            _GoalType.achievement => '$_goalValue cm',
+            _GoalType.achievement => '${l10n.target}: $_goalValue cm',
             _GoalType.time        => _formatGoalTime(_goalValue),
-            _GoalType.points      => '$_goalValue pts',
+            _GoalType.points      => '${l10n.target}: $_goalValue',
           };
     return Column(
       key: _sliderKey,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        Text(l10n.goalEndConditionLabel,
+            style: AppTypography.bodySmall(context,
+                color: theme.border, fontWeight: FontWeight.w600)),
+        const SizedBox(height: 6),
         Row(
           children: types.map((t) {
             final (type, label) = t;

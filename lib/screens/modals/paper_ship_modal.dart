@@ -539,7 +539,7 @@ class _PaperShipModalState extends State<PaperShipModal>
         ? '$pts/${widget.goalValue} pts'
         : '$pts pts';
     final timeStr = widget.goalType == 'time' && widget.goalValue > 0
-        ? '${_formatTime(_elapsedSeconds)}/${_formatTime(widget.goalValue.toDouble())}'
+        ? _formatTime((widget.goalValue - _elapsedSeconds).clamp(0.0, widget.goalValue.toDouble()))
         : _formatTime(_elapsedSeconds);
     return '$distStr  ·  $ptsStr  ·  $timeStr';
   }
