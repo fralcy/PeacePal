@@ -1,4 +1,5 @@
 import '../../models/scene_models.dart';
+import '../models/display_item_group.dart';
 
 /// Quản lý paths của tất cả assets trong app
 class AppAssets {
@@ -290,6 +291,16 @@ class AppAssets {
     'cory': fishCory,
     'platy': fishPlaty,
   };
+
+  // ==================== DISPLAY ITEMS ====================
+  // All 8 groups × 4 tiers = 32 assets, naming: {group}_{tier}.webp
+  // Living-room groups: tier N replaces tier N-1 (shape change)
+  // Game-room groups:   tier N adds a new distinct item alongside tiers 1..N-1
+
+  /// Returns the asset path for [group] at [tier] (1–4).
+  static String displayItemAsset(DisplayItemGroup group, int tier) {
+    return 'assets/images/display_items/${group.name}_${tier.clamp(1, 4)}.webp';
+  }
 
   // ==================== ROCK BALANCING ====================
   static const String rockBgDefault  = 'assets/images/rock_balancing/bg_default.webp';
