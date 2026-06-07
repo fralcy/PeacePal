@@ -48,6 +48,8 @@ class SfxService {
   void celebration() => _play('celebration');
   void rockHit() => _play('rock_hit');
   void rockLand() => _play('rock_land');
+  // Falls back to button_click until assets/audio/sfx/item_tap.mp3 is provided.
+  void itemTap() => _handles.containsKey('item_tap') ? _play('item_tap') : _play('button_click');
 
   void changeVolume(int volume) => _volume = volume / 100.0;
 
