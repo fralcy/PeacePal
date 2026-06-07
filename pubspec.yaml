@@ -116,6 +116,7 @@ flutter:
     - assets/images/rock_balancing/
     - assets/images/firefly/
     - assets/images/
+    - assets/images/display_items/
     # Audio - BGM
     - assets/audio/bgm/lofi_beats.mp3
     - assets/audio/bgm/rain_sounds.mp3
