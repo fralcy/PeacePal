@@ -562,6 +562,7 @@ class _AchievementCard extends StatelessWidget {
           border: Border.all(color: borderColor, width: isUnlocked || isDebugMode ? 1.5 : 1.0),
         ),
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Stack(
               children: [

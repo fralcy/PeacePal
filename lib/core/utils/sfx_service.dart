@@ -21,6 +21,7 @@ class SfxService {
     'celebration': 'assets/audio/sfx/celebration.mp3',
     'rock_hit': 'assets/audio/sfx/rock_hit.mp3',
     'rock_land': 'assets/audio/sfx/rock_land.mp3',
+    'item_tap': 'assets/audio/sfx/item_tap.mp3',
   };
 
   Future<void> initialize() async {
@@ -48,8 +49,7 @@ class SfxService {
   void celebration() => _play('celebration');
   void rockHit() => _play('rock_hit');
   void rockLand() => _play('rock_land');
-  // Falls back to button_click until assets/audio/sfx/item_tap.mp3 is provided.
-  void itemTap() => _handles.containsKey('item_tap') ? _play('item_tap') : _play('button_click');
+  void itemTap() => _play('item_tap');
 
   void changeVolume(int volume) => _volume = volume / 100.0;
 
