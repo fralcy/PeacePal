@@ -422,6 +422,15 @@ class AppLocalizationsEn extends AppLocalizations {
   @override String get target => 'Target';
   @override String get catchTarget => 'catch';
   @override String get goalAchievement => 'Achievement';
+  @override String get goalEndConditionLabel => 'End condition';
+  @override String get goalDistance => 'Distance';
+  @override String get goalItems => 'Items';
+  @override String get goalCatchCount => 'Fireflies';
+  @override String get goalDistanceFull => 'Distance traveled';
+  @override String get goalItemsFull => 'Items collected';
+  @override String get goalTimeFull => 'Session time';
+  @override String get goalCatchCountFull => 'Fireflies caught';
+  @override String get timeRemaining => 'Remaining';
 
   // Painting Room
   @override

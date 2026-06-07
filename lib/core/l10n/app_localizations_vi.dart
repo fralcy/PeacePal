@@ -424,6 +424,15 @@ class AppLocalizationsVi extends AppLocalizations {
   @override String get target => 'Mục tiêu';
   @override String get catchTarget => 'bắt';
   @override String get goalAchievement => 'Thành tích';
+  @override String get goalEndConditionLabel => 'Điều kiện kết thúc màn chơi';
+  @override String get goalDistance => 'Khoảng cách';
+  @override String get goalItems => 'Vật phẩm';
+  @override String get goalCatchCount => 'Đom đóm bắt';
+  @override String get goalDistanceFull => 'Khoảng cách đi được';
+  @override String get goalItemsFull => 'Vật phẩm thu thập';
+  @override String get goalTimeFull => 'Thời gian màn chơi';
+  @override String get goalCatchCountFull => 'Số đom đóm bắt được';
+  @override String get timeRemaining => 'Còn lại';
 
   // Painting Room
   @override

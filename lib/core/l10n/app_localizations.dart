@@ -223,6 +223,15 @@ abstract class AppLocalizations {
   String get target;
   String get catchTarget;
   String get goalAchievement;
+  String get goalEndConditionLabel;
+  String get goalDistance;
+  String get goalItems;
+  String get goalCatchCount;
+  String get goalDistanceFull;
+  String get goalItemsFull;
+  String get goalTimeFull;
+  String get goalCatchCountFull;
+  String get timeRemaining;
 
   // Painting Room
   String get art;
