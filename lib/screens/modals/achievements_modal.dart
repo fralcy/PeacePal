@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../core/constants/app_assets.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_shapes.dart';
 import '../../core/constants/app_typography.dart';
 import '../../core/l10n/app_localizations.dart';
+import '../../core/models/display_item_group.dart';
 import '../../core/providers/achievement_provider.dart';
+import '../../core/utils/display_item_service.dart';
 import '../../core/providers/score_provider.dart';
 import '../../core/utils/achievement_service.dart';
 import '../../core/widgets/app_modal.dart';
+import '../../models/achievement_progress.dart';
 
 class AchievementsModal {
   AchievementsModal._();
@@ -56,13 +60,14 @@ class AchievementsModal {
   }
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+
 class _AchievementsContent extends StatelessWidget {
   final void Function(String featureId)? onNavigate;
 
   const _AchievementsContent({this.onNavigate});
 
   static const _categoryOrder = [
-    AchievementCategory.engagement,
     AchievementCategory.schedule,
     AchievementCategory.diary,
     AchievementCategory.breathing,
@@ -71,8 +76,22 @@ class _AchievementsContent extends StatelessWidget {
     AchievementCategory.aquarium,
     AchievementCategory.painting,
     AchievementCategory.music,
+    AchievementCategory.engagement,
     AchievementCategory.score,
   ];
+
+  static const Map<AchievementCategory, DisplayItemGroup?> _catToGroup = {
+    AchievementCategory.schedule:  DisplayItemGroup.schedule,
+    AchievementCategory.diary:     DisplayItemGroup.diary,
+    AchievementCategory.breathing: DisplayItemGroup.breathing,
+    AchievementCategory.sleep:     DisplayItemGroup.sleep,
+    AchievementCategory.garden:    DisplayItemGroup.garden,
+    AchievementCategory.aquarium:  DisplayItemGroup.aquarium,
+    AchievementCategory.painting:  DisplayItemGroup.painting,
+    AchievementCategory.music:     DisplayItemGroup.music,
+    AchievementCategory.engagement: null,
+    AchievementCategory.score:      null,
+  };
 
   static const _categoryFeatureId = {
     AchievementCategory.schedule: 'schedule',
@@ -88,8 +107,8 @@ class _AchievementsContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final progress =
-        context.watch<AchievementProvider>().progress;
+    final progress = context.watch<AchievementProvider>().progress;
+    final totalPoints = context.watch<ScoreProvider>().profile.totalPoints;
 
     final total = AchievementService.all.length;
     final unlocked = progress.unlockedIds.length;
@@ -97,14 +116,12 @@ class _AchievementsContent extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Progress summary
         _buildProgressHeader(context, l10n, unlocked, total),
         const SizedBox(height: 20),
 
-        // Achievements grouped by category
         for (final cat in _categoryOrder) ...[
-          _buildCategorySection(context, l10n, cat, progress),
-          const SizedBox(height: 16),
+          _buildCategorySection(context, l10n, cat, progress, totalPoints),
+          const SizedBox(height: 20),
         ],
       ],
     );
@@ -136,11 +153,7 @@ class _AchievementsContent extends StatelessWidget {
               shape: BoxShape.circle,
               border: Border.all(color: theme.primary, width: 1.5),
             ),
-            child: Icon(
-              Icons.emoji_events_rounded,
-              color: theme.primary,
-              size: 26,
-            ),
+            child: Icon(Icons.emoji_events_rounded, color: theme.primary, size: 26),
           ),
           const SizedBox(width: 14),
           Expanded(
@@ -149,11 +162,8 @@ class _AchievementsContent extends StatelessWidget {
               children: [
                 Text(
                   '$unlocked / $total ${l10n.achievements}',
-                  style: AppTypography.labelLarge(
-                    context,
-                    color: theme.text,
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: AppTypography.labelLarge(context,
+                      color: theme.text, fontWeight: FontWeight.w600),
                 ),
                 const SizedBox(height: 6),
                 ClipRRect(
@@ -161,8 +171,7 @@ class _AchievementsContent extends StatelessWidget {
                   child: LinearProgressIndicator(
                     value: fraction,
                     minHeight: 8,
-                    backgroundColor:
-                        theme.border,
+                    backgroundColor: theme.border,
                     valueColor: AlwaysStoppedAnimation(theme.primary),
                   ),
                 ),
@@ -178,90 +187,182 @@ class _AchievementsContent extends StatelessWidget {
     BuildContext context,
     AppLocalizations l10n,
     AchievementCategory cat,
-    dynamic progress,
+    AchievementProgress progress,
+    int totalPoints,
   ) {
-    final categoryAchievements = AchievementService.all
-        .where((a) => a.category == cat)
-        .toList();
+    final group = _catToGroup[cat];
+    if (group != null) {
+      return _buildShelfSection(context, l10n, cat, group, progress, totalPoints);
+    }
+    return _buildCardSection(context, l10n, cat, progress, totalPoints);
+  }
+
+  // ── SHELF SECTION (for groups with display items) ─────────────────────────
+
+  Widget _buildShelfSection(
+    BuildContext context,
+    AppLocalizations l10n,
+    AchievementCategory cat,
+    DisplayItemGroup group,
+    AchievementProgress progress,
+    int totalPoints,
+  ) {
+    final theme = context.theme;
+    final tier = DisplayItemService.getTier(group, progress);
+    final tracking = _trackingInfo(group, progress);
     final featureId = _categoryFeatureId[cat];
-    final totalPoints = context.watch<ScoreProvider>().profile.totalPoints;
-    final progressText = _buildProgressText(l10n, cat, categoryAchievements, progress, totalPoints);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Category header
+        // Header row
+        Row(
+          children: [
+            Text(
+              l10n.achievementCategoryName(cat.name),
+              style: AppTypography.labelMedium(context,
+                  color: context.onSurfaceVariant, fontWeight: FontWeight.w600),
+            ),
+            const SizedBox(width: 8),
+            Text(
+              _trackingLabel(l10n, tracking),
+              style: AppTypography.labelSmall(context, color: theme.text),
+            ),
+            const Spacer(),
+            if (onNavigate != null && featureId != null)
+              GestureDetector(
+                onTap: () {
+                  Navigator.of(context).pop();
+                  onNavigate!(featureId);
+                },
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(l10n.goToFeature,
+                        style: AppTypography.labelSmall(context,
+                            color: context.primaryColor)),
+                    const SizedBox(width: 2),
+                    Icon(Icons.arrow_forward_ios_rounded,
+                        size: 11, color: context.primaryColor),
+                  ],
+                ),
+              ),
+          ],
+        ),
+        const SizedBox(height: 10),
+
+        // Shelf row
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+          decoration: BoxDecoration(
+            color: theme.background,
+            borderRadius: context.shapes.medium.borderRadius as BorderRadius,
+            border: Border.all(color: theme.border),
+          ),
+          child: Row(
+            children: List.generate(4, (i) {
+              final slotTier = i + 1;
+              return Expanded(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: i == 0 || i == 3 ? 4 : 3),
+                  child: _ShelfSlot(
+                    group: group,
+                    slotTier: slotTier,
+                    isUnlocked: tier >= slotTier,
+                    achievementId: group.achievementIds[i],
+                    l10n: l10n,
+                  ),
+                ),
+              );
+            }),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ── CARD SECTION (engagement / score — no display items) ─────────────────
+
+  Widget _buildCardSection(
+    BuildContext context,
+    AppLocalizations l10n,
+    AchievementCategory cat,
+    AchievementProgress progress,
+    int totalPoints,
+  ) {
+    final categoryAchievements =
+        AchievementService.all.where((a) => a.category == cat).toList();
+    final tracking = _cardTrackingText(l10n, cat, categoryAchievements, progress, totalPoints);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
         Padding(
           padding: const EdgeInsets.only(bottom: 8),
           child: Row(
             children: [
               Text(
                 l10n.achievementCategoryName(cat.name),
-                style: AppTypography.labelMedium(
-                  context,
-                  color: context.onSurfaceVariant,
-                  fontWeight: FontWeight.w600,
-                ),
+                style: AppTypography.labelMedium(context,
+                    color: context.onSurfaceVariant, fontWeight: FontWeight.w600),
               ),
               const Spacer(),
-              if (progressText != null) ...[
-                Text(
-                  progressText,
-                  style: AppTypography.labelSmall(
-                    context,
-                    color: context.theme.text,
-                  ),
-                ),
+              if (tracking != null) ...[
+                Text(tracking,
+                    style: AppTypography.labelSmall(context, color: context.theme.text)),
                 const SizedBox(width: 8),
               ],
-              if (onNavigate != null && featureId != null)
-                GestureDetector(
-                  onTap: () {
-                    Navigator.of(context).pop();
-                    onNavigate!(featureId);
-                  },
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        l10n.goToFeature,
-                        style: AppTypography.labelSmall(
-                          context,
-                          color: context.primaryColor,
-                        ),
-                      ),
-                      const SizedBox(width: 2),
-                      Icon(
-                        Icons.arrow_forward_ios_rounded,
-                        size: 11,
-                        color: context.primaryColor,
-                      ),
-                    ],
-                  ),
-                ),
             ],
           ),
         ),
-        // Achievement cards
-        ...categoryAchievements
-            .map((ach) => _AchievementCard(
-                  achievement: ach,
-                  isUnlocked: progress.isUnlocked(ach.id),
-                  unlockedAtMs: progress.unlockedAt[ach.id],
-                )),
+        ...categoryAchievements.map((ach) => _AchievementCard(
+              achievement: ach,
+              isUnlocked: progress.isUnlocked(ach.id),
+              unlockedAtMs: progress.unlockedAt[ach.id],
+            )),
       ],
     );
   }
 
-  /// Returns "x/y unit" for the next uncompleted achievement, or null if all done.
-  String? _buildProgressText(
+  // ── Tracking helpers ─────────────────────────────────────────────────────
+
+  static ({int current, int maxTarget, String unit}) _trackingInfo(
+    DisplayItemGroup group,
+    AchievementProgress progress,
+  ) {
+    int c(String key) => progress.counter(key);
+    return switch (group) {
+      DisplayItemGroup.schedule  => (current: c(AchievementService.kScheduleTaskCount), maxTarget: 150, unit: 'tasks'),
+      DisplayItemGroup.diary     => (current: c(AchievementService.kDiaryCount),         maxTarget: 30,  unit: 'entries'),
+      DisplayItemGroup.breathing => (current: c(AchievementService.kBreathingTotal),     maxTarget: 30,  unit: 'sessions'),
+      DisplayItemGroup.sleep     => (current: c(AchievementService.kSleepLogCount),      maxTarget: 30,  unit: 'logs'),
+      DisplayItemGroup.garden    => (current: c(AchievementService.kPlantCount),         maxTarget: 160, unit: 'plants'),
+      DisplayItemGroup.aquarium  => (current: c(AchievementService.kFishFedCount),       maxTarget: 300, unit: 'feedings'),
+      DisplayItemGroup.painting  => (current: c(AchievementService.kPixelsPainted),      maxTarget: 5120,unit: 'pixels'),
+      DisplayItemGroup.music     => (current: c(AchievementService.kNotesChanged),       maxTarget: 600, unit: 'notes'),
+    };
+  }
+
+  static String _trackingLabel(
+    AppLocalizations l10n,
+    ({int current, int maxTarget, String unit}) info,
+  ) {
+    final unit = l10n.achievementUnit(info.unit);
+    if (info.current >= info.maxTarget) {
+      return '${info.current} $unit';
+    }
+    return '${info.current} / ${info.maxTarget} $unit';
+  }
+
+  /// Progress text for card-only categories (engagement, score). Returns null if none apply.
+  static String? _cardTrackingText(
     AppLocalizations l10n,
     AchievementCategory cat,
     List<Achievement> achievements,
-    dynamic progress,
+    AchievementProgress progress,
     int totalPoints,
   ) {
-    final Iterable<Achievement> locked = achievements.where((a) => !progress.isUnlocked(a.id));
+    final locked = achievements.where((a) => !progress.isUnlocked(a.id));
     if (locked.isEmpty) return null;
     final info = _progressInfo(locked.first.id, progress, totalPoints);
     if (info == null) return null;
@@ -269,51 +370,17 @@ class _AchievementsContent extends StatelessWidget {
   }
 
   static int _countBits(int n) {
-    int c = 0;
-    int v = n;
+    int c = 0; int v = n;
     while (v > 0) { c += v & 1; v >>= 1; }
     return c;
   }
 
-  /// Returns (current, target, unitKey) for the given achievement ID, or null.
-  static (int, int, String)? _progressInfo(String id, dynamic progress, int totalPoints) {
-    int c(String key) => (progress.counters[key] as int?) ?? 0;
+  static (int, int, String)? _progressInfo(String id, AchievementProgress progress, int totalPoints) {
+    int c(String key) => progress.counter(key);
     return switch (id) {
       'days_7'              => (c(AchievementService.kDaysUsed), 7, 'days'),
       'days_30'             => (c(AchievementService.kDaysUsed), 30, 'days'),
       'app_explorer'        => (_countBits(c(AchievementService.kFeaturesUsed)), 3, 'features'),
-      'first_schedule_task' => (c(AchievementService.kScheduleTaskCount), 1, 'tasks'),
-      'schedule_task_15'    => (c(AchievementService.kScheduleTaskCount), 15, 'tasks'),
-      'schedule_task_75'    => (c(AchievementService.kScheduleTaskCount), 75, 'tasks'),
-      'schedule_task_150'   => (c(AchievementService.kScheduleTaskCount), 150, 'tasks'),
-      'first_diary'         => (c(AchievementService.kDiaryCount), 1, 'entries'),
-      'diary_5'             => (c(AchievementService.kDiaryCount), 5, 'entries'),
-      'diary_15'            => (c(AchievementService.kDiaryCount), 15, 'entries'),
-      'diary_30'            => (c(AchievementService.kDiaryCount), 30, 'entries'),
-      'first_breath'        => (c(AchievementService.kBreathingTotal), 1, 'sessions'),
-      'breathing_5'         => (c(AchievementService.kBreathingTotal), 5, 'sessions'),
-      'breathing_15'        => (c(AchievementService.kBreathingTotal), 15, 'sessions'),
-      'breathing_30'        => (c(AchievementService.kBreathingTotal), 30, 'sessions'),
-      'first_sleep_log'     => (c(AchievementService.kSleepLogCount), 1, 'logs'),
-      'sleep_log_5'         => (c(AchievementService.kSleepLogCount), 5, 'logs'),
-      'sleep_log_15'        => (c(AchievementService.kSleepLogCount), 15, 'logs'),
-      'sleep_log_30'        => (c(AchievementService.kSleepLogCount), 30, 'logs'),
-      'first_plant'         => (c(AchievementService.kPlantCount), 1, 'plants'),
-      'plant_30'            => (c(AchievementService.kPlantCount), 30, 'plants'),
-      'plant_80'            => (c(AchievementService.kPlantCount), 80, 'plants'),
-      'plant_160'           => (c(AchievementService.kPlantCount), 160, 'plants'),
-      'first_fish_fed'      => (c(AchievementService.kFishFedCount), 1, 'feedings'),
-      'fish_fed_15'         => (c(AchievementService.kFishFedCount), 15, 'feedings'),
-      'fish_fed_150'        => (c(AchievementService.kFishFedCount), 150, 'feedings'),
-      'fish_fed_300'        => (c(AchievementService.kFishFedCount), 300, 'feedings'),
-      'first_painting'      => (c(AchievementService.kPixelsPainted), 1, 'pixels'),
-      'painting_pixels_512' => (c(AchievementService.kPixelsPainted), 512, 'pixels'),
-      'painting_pixels_2560'=> (c(AchievementService.kPixelsPainted), 2560, 'pixels'),
-      'painting_pixels_5120'=> (c(AchievementService.kPixelsPainted), 5120, 'pixels'),
-      'first_music'         => (c(AchievementService.kNotesChanged), 1, 'notes'),
-      'music_notes_60'      => (c(AchievementService.kNotesChanged), 60, 'notes'),
-      'music_notes_300'     => (c(AchievementService.kNotesChanged), 300, 'notes'),
-      'music_notes_600'     => (c(AchievementService.kNotesChanged), 600, 'notes'),
       'score_1000'          => (totalPoints, 1000, 'points'),
       'score_5000'          => (totalPoints, 5000, 'points'),
       'score_20000'         => (totalPoints, 20000, 'points'),
@@ -321,6 +388,96 @@ class _AchievementsContent extends StatelessWidget {
     };
   }
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Shelf slot widget
+
+class _ShelfSlot extends StatelessWidget {
+  final DisplayItemGroup group;
+  final int slotTier;
+  final bool isUnlocked;
+  final String achievementId;
+  final AppLocalizations l10n;
+
+  const _ShelfSlot({
+    required this.group,
+    required this.slotTier,
+    required this.isUnlocked,
+    required this.achievementId,
+    required this.l10n,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = context.theme;
+    final assetPath = AppAssets.displayItemAsset(group, slotTier);
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        AspectRatio(
+          aspectRatio: 1,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              // Item image (or placeholder) — locked = dark silhouette
+              ColorFiltered(
+                colorFilter: isUnlocked
+                    ? const ColorFilter.mode(Colors.transparent, BlendMode.dst)
+                    : const ColorFilter.matrix([
+                        0, 0, 0, 0, 0.12,
+                        0, 0, 0, 0, 0.12,
+                        0, 0, 0, 0, 0.12,
+                        0, 0, 0, 1, 0,
+                      ]),
+                child: Image.asset(
+                  assetPath,
+                  fit: BoxFit.contain,
+                  errorBuilder: (ctx, err, st) => _buildImagePlaceholder(theme),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          l10n.achievementTitle(achievementId),
+          textAlign: TextAlign.center,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+          style: AppTypography.bodySmall(context,
+              color: isUnlocked ? theme.text : theme.border),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildImagePlaceholder(dynamic theme) {
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: theme.border, width: 1.5),
+      ),
+      child: Center(
+        child: Icon(_groupIcon(), size: 20, color: theme.border),
+      ),
+    );
+  }
+
+  IconData _groupIcon() => switch (group) {
+    DisplayItemGroup.schedule  => Icons.task_alt,
+    DisplayItemGroup.diary     => Icons.book_outlined,
+    DisplayItemGroup.breathing => Icons.air,
+    DisplayItemGroup.sleep     => Icons.bedtime_outlined,
+    DisplayItemGroup.garden    => Icons.eco_outlined,
+    DisplayItemGroup.aquarium  => Icons.water_drop_outlined,
+    DisplayItemGroup.painting  => Icons.brush_outlined,
+    DisplayItemGroup.music     => Icons.music_note_outlined,
+  };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Achievement card (used for engagement / score categories)
 
 class _AchievementCard extends StatelessWidget {
   final Achievement achievement;
@@ -350,14 +507,10 @@ class _AchievementCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: theme.background,
           borderRadius: context.shapes.medium.borderRadius as BorderRadius,
-          border: Border.all(
-            color: borderColor,
-            width: isUnlocked ? 1.5 : 1.0,
-          ),
+          border: Border.all(color: borderColor, width: isUnlocked ? 1.5 : 1.0),
         ),
         child: Row(
           children: [
-            // Icon circle
             Stack(
               children: [
                 Container(
@@ -368,9 +521,7 @@ class _AchievementCard extends StatelessWidget {
                     border: Border.all(color: borderColor, width: 1.5),
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(achievement.icon,
-                      size: 22,
-                      color: iconColor),
+                  child: Icon(achievement.icon, size: 22, color: iconColor),
                 ),
                 if (!isUnlocked)
                   Positioned(
@@ -384,41 +535,26 @@ class _AchievementCard extends StatelessWidget {
                         shape: BoxShape.circle,
                         border: Border.all(color: theme.border, width: 1.5),
                       ),
-                      child: Icon(
-                        Icons.lock_outline,
-                        size: 10,
-                        color: iconColor,
-                      ),
+                      child: Icon(Icons.lock_outline, size: 10, color: iconColor),
                     ),
                   ),
               ],
             ),
             const SizedBox(width: 12),
-
-            // Title + description
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    l10n.achievementTitle(achievement.id),
-                    style: AppTypography.labelMedium(
-                      context,
-                      color: titleColor,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
+                  Text(l10n.achievementTitle(achievement.id),
+                      style: AppTypography.labelMedium(context,
+                          color: titleColor, fontWeight: FontWeight.w600)),
                   const SizedBox(height: 2),
-                  Text(
-                    l10n.achievementDescription(achievement.id),
-                    style: AppTypography.bodySmall(context, color: descColor),
-                  ),
+                  Text(l10n.achievementDescription(achievement.id),
+                      style: AppTypography.bodySmall(context, color: descColor)),
                 ],
               ),
             ),
             const SizedBox(width: 8),
-
-            // Right: points or unlocked check
             if (isUnlocked)
               _buildUnlockedBadge(context, theme)
             else
@@ -444,27 +580,16 @@ class _AchievementCard extends StatelessWidget {
         ),
         if (achievement.pointsReward > 0) ...[
           const SizedBox(height: 2),
-          Text(
-            '+${achievement.pointsReward}',
-            style: AppTypography.bodySmall(context, color: theme.primary),
-          ),
+          Text('+${achievement.pointsReward}',
+              style: AppTypography.bodySmall(context, color: theme.primary)),
         ],
       ],
     );
   }
 
-  Widget _buildPointsBadge(
-    BuildContext context,
-    dynamic theme,
-    AppLocalizations l10n,
-  ) {
+  Widget _buildPointsBadge(BuildContext context, dynamic theme, AppLocalizations l10n) {
     if (achievement.pointsReward <= 0) return const SizedBox(width: 28);
-    return Text(
-      '+${achievement.pointsReward}',
-      style: AppTypography.bodySmall(
-        context,
-        color: theme.border,
-      ),
-    );
+    return Text('+${achievement.pointsReward}',
+        style: AppTypography.bodySmall(context, color: theme.border));
   }
 }

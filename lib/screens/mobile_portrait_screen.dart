@@ -10,7 +10,10 @@ import '../core/widgets/main_feature_buttons.dart';
 import '../core/widgets/nav_menu_footer.dart';
 import '../core/widgets/mascot_sprite_widget.dart';
 import '../core/widgets/speech_bubble.dart';
+import '../core/providers/achievement_provider.dart';
 import '../core/providers/scene_provider.dart';
+import '../core/utils/display_item_service.dart';
+import '../core/widgets/scene_display_item_widget.dart';
 import 'modals/scene_shop_modal.dart';
 import 'modals/achievements_modal.dart';
 import 'mobile_portrait_tutorial_screen.dart';
@@ -152,6 +155,13 @@ class _MobilePortraitScreenState extends State<MobilePortraitScreen>
     return Consumer<SceneProvider>(
       builder: (context, sceneProvider, child) {
         final sceneAssetPath = sceneProvider.getCurrentSceneAsset(currentScene);
+        final sceneSet = sceneProvider.currentScenes.length > currentScene.index
+            ? sceneProvider.currentScenes[currentScene.index].sceneSet
+            : sceneProvider.getCurrentSceneSet();
+
+        final progress = context.watch<AchievementProvider>().progress;
+        final displayItems = DisplayItemService.getItemsForScene(currentScene, sceneSet, progress);
+        final itemSize = sceneSize * 0.16;
 
         return SizedBox(
           width: sceneSize,
@@ -186,6 +196,18 @@ class _MobilePortraitScreenState extends State<MobilePortraitScreen>
                   ),
                 ),
               ),
+
+              // Display items (achievement rewards)
+              for (final item in displayItems)
+                Positioned(
+                  left: item.position.dx * sceneSize - itemSize / 2,
+                  top: item.position.dy * sceneSize - itemSize / 2,
+                  child: SceneDisplayItemWidget(
+                    key: ValueKey(item.id),
+                    data: item,
+                    size: itemSize,
+                  ),
+                ),
 
               if (currentDialogue != null)
                 Positioned(
