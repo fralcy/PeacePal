@@ -488,7 +488,7 @@ class _PaperShipModalState extends State<PaperShipModal>
               style: AppTypography.bodyLarge(context,
                   color: theme.text, fontWeight: FontWeight.bold)),
           content: Text(
-            '${dist.toStringAsFixed(1)} cm  ·  $items pts\n${l10n.time}: ${_formatTime(elapsed)}',
+            '${dist.toStringAsFixed(1)} cm  ·  $items ${l10n.points}\n${l10n.time}: ${_formatTime(elapsed)}',
             style: AppTypography.bodyMedium(context, color: theme.text),
           ),
           actions: [
@@ -527,17 +527,17 @@ class _PaperShipModalState extends State<PaperShipModal>
   // Info bar text
   // ─────────────────────────────────────────────────────────
 
-  String _buildInfoText(PaperShipRenderSnapshot snap) {
+  String _buildInfoText(PaperShipRenderSnapshot snap, AppLocalizations l10n) {
     final dist = _canvasHeight > 0
         ? snap.distanceTraveled / _canvasHeight * 100
         : 0.0;
     final distStr = widget.goalType == 'achievement' && widget.goalValue > 0
         ? '${dist.toStringAsFixed(1)}/${widget.goalValue} cm'
         : '${dist.toStringAsFixed(1)} cm';
-    final pts = snap.itemsCollected;
+    final items = snap.itemsCollected;
     final ptsStr = widget.goalType == 'points' && widget.goalValue > 0
-        ? '$pts/${widget.goalValue} pts'
-        : '$pts pts';
+        ? '$items/${widget.goalValue} ${l10n.points}'
+        : '$items ${l10n.points}';
     final timeStr = widget.goalType == 'time' && widget.goalValue > 0
         ? _formatTime((widget.goalValue - _elapsedSeconds).clamp(0.0, widget.goalValue.toDouble()))
         : _formatTime(_elapsedSeconds);
@@ -568,7 +568,7 @@ class _PaperShipModalState extends State<PaperShipModal>
             children: [
               Expanded(
                 child: Text(
-                  snap != null ? _buildInfoText(snap) : '0.0 cm',
+                  snap != null ? _buildInfoText(snap, l10n) : '0.0 cm',
                   style: AppTypography.bodySmall(context,
                       color: theme.primary, fontWeight: FontWeight.bold),
                   overflow: TextOverflow.ellipsis,

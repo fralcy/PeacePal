@@ -1108,7 +1108,7 @@ class _FireflyLobbyModalState extends State<FireflyLobbyModal> {
         ? l10n.endless
         : switch (effectiveType) {
             _GoalType.achievement || _GoalType.points => '${l10n.target}: $_goalValue',
-            _GoalType.time                            => _formatGoalTime(_goalValue),
+            _GoalType.time                            => _formatGoalTime(_goalValue, l10n),
           };
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1158,10 +1158,12 @@ class _FireflyLobbyModalState extends State<FireflyLobbyModal> {
     );
   }
 
-  String _formatGoalTime(int seconds) {
+  String _formatGoalTime(int seconds, AppLocalizations l10n) {
     final m = seconds ~/ 60;
     final s = seconds % 60;
-    return m > 0 ? (s == 0 ? '${m}m' : '${m}m ${s}s') : '${s}s';
+    final min = l10n.minuteAbbr;
+    final sec = l10n.secondAbbr;
+    return m > 0 ? (s == 0 ? '$m $min' : '$m $min $s $sec') : '$s $sec';
   }
 
   Widget _buildClientRoleSelector(AppTheme theme, AppLocalizations l10n) {

@@ -161,7 +161,9 @@ class AppLocalizationsEn extends AppLocalizations {
   
   @override
   String get minutes => 'minutes';
-  
+  @override String get minuteAbbr => 'm';
+  @override String get secondAbbr => 's';
+
   @override
   String get cloudSync => 'Cloud Sync';
   

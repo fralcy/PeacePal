@@ -76,6 +76,8 @@ abstract class AppLocalizations {
   String get before;
   String get remindBeforeMinutes;
   String get minutes;
+  String get minuteAbbr;
+  String get secondAbbr;
   
   // Settings Modal - Cloud Sync
   String get cloudSync;

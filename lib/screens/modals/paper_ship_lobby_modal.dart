@@ -876,7 +876,7 @@ class _PaperShipLobbyModalState extends State<PaperShipLobbyModal> {
         ? l10n.endless
         : switch (_goalType) {
             _GoalType.achievement => '${l10n.target}: $_goalValue cm',
-            _GoalType.time        => _formatGoalTime(_goalValue),
+            _GoalType.time        => _formatGoalTime(_goalValue, l10n),
             _GoalType.points      => '${l10n.target}: $_goalValue',
           };
     return Column(
@@ -928,10 +928,12 @@ class _PaperShipLobbyModalState extends State<PaperShipLobbyModal> {
     );
   }
 
-  String _formatGoalTime(int seconds) {
+  String _formatGoalTime(int seconds, AppLocalizations l10n) {
     final m = seconds ~/ 60;
     final s = seconds % 60;
-    return m > 0 ? (s == 0 ? '${m}m' : '${m}m ${s}s') : '${s}s';
+    final min = l10n.minuteAbbr;
+    final sec = l10n.secondAbbr;
+    return m > 0 ? (s == 0 ? '$m $min' : '$m $min $s $sec') : '$s $sec';
   }
 
   Widget _buildHostLobby(AppTheme theme, AppLocalizations l10n, GameRoomProvider room) {

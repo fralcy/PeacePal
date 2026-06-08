@@ -163,7 +163,9 @@ class AppLocalizationsVi extends AppLocalizations {
   
   @override
   String get minutes => 'phút';
-  
+  @override String get minuteAbbr => 'phút';
+  @override String get secondAbbr => 'giây';
+
   @override
   String get cloudSync => 'Đồng bộ Cloud';
   
