@@ -2,19 +2,6 @@ import 'package:flutter/material.dart';
 import '../../models/scene_models.dart';
 import '../models/display_item_group.dart';
 
-/// Scene positions for display items — normalized CENTER fractions (0.0–1.0).
-///
-/// HOW TO USE:
-///   1. Open a scene image at any size in your image editor.
-///   2. Mark the desired center point of the display item.
-///   3. Divide the pixel coordinates by the image width/height.
-///   4. Update the corresponding Offset below.
-///
-/// In Flutter: left = cx * sceneSize − itemSize/2
-///             top  = cy * sceneSize − itemSize/2
-///
-/// All values are PLACEHOLDER — update after image-editor testing.
-
 class DisplayItemPositions {
 
   // ── LIVING ROOM (shape-change groups) ────────────────────────────────────
@@ -24,45 +11,45 @@ class DisplayItemPositions {
   //   • speech bubble: center (~y 0.35–0.55)
 
   static final Map<DisplayItemGroup, Map<SceneSet, Offset>> _living = {
-    DisplayItemGroup.schedule: {       // cork memo board — upper-right wall area
-      SceneSet.defaultSet:   const Offset(0.80, 0.30),
+    DisplayItemGroup.schedule: {       // cork memo board
+      SceneSet.defaultSet:   const Offset(0.12, 0.30),
       SceneSet.forest:       const Offset(0.80, 0.30),
-      SceneSet.beach:        const Offset(0.80, 0.30),
-      SceneSet.peachBlossom: const Offset(0.80, 0.30),
-      SceneSet.winter:       const Offset(0.80, 0.30),
-      SceneSet.desert:       const Offset(0.80, 0.30),
-      SceneSet.cosmic:       const Offset(0.80, 0.30),
-      SceneSet.castle:       const Offset(0.80, 0.30),
+      SceneSet.beach:        const Offset(0.86, 0.30),
+      SceneSet.peachBlossom: const Offset(0.86, 0.20),
+      SceneSet.winter:       const Offset(0.86, 0.30),
+      SceneSet.desert:       const Offset(0.74, 0.30),
+      SceneSet.cosmic:       const Offset(0.48, 0.34),
+      SceneSet.castle:       const Offset(0.89, 0.22),
     },
-    DisplayItemGroup.diary: {          // journal — lower-left surface
-      SceneSet.defaultSet:   const Offset(0.18, 0.72),
+    DisplayItemGroup.diary: {          // journal book
+      SceneSet.defaultSet:   const Offset(0.76, 0.72),
       SceneSet.forest:       const Offset(0.18, 0.72),
-      SceneSet.beach:        const Offset(0.18, 0.72),
+      SceneSet.beach:        const Offset(0.24, 0.58),
       SceneSet.peachBlossom: const Offset(0.18, 0.72),
-      SceneSet.winter:       const Offset(0.18, 0.72),
-      SceneSet.desert:       const Offset(0.18, 0.72),
-      SceneSet.cosmic:       const Offset(0.18, 0.72),
-      SceneSet.castle:       const Offset(0.18, 0.72),
+      SceneSet.winter:       const Offset(0.24, 0.58),
+      SceneSet.desert:       const Offset(0.15, 0.62),
+      SceneSet.cosmic:       const Offset(0.94, 0.90),
+      SceneSet.castle:       const Offset(0.80, 0.60),
     },
-    DisplayItemGroup.breathing: {      // pinwheel — left-middle (window / open area)
-      SceneSet.defaultSet:   const Offset(0.12, 0.42),
+    DisplayItemGroup.breathing: {      // pinwheel toy
+      SceneSet.defaultSet:   const Offset(0.84, 0.56),
       SceneSet.forest:       const Offset(0.12, 0.42),
-      SceneSet.beach:        const Offset(0.12, 0.42),
-      SceneSet.peachBlossom: const Offset(0.12, 0.42),
-      SceneSet.winter:       const Offset(0.12, 0.42),
-      SceneSet.desert:       const Offset(0.12, 0.42),
-      SceneSet.cosmic:       const Offset(0.12, 0.42),
-      SceneSet.castle:       const Offset(0.12, 0.42),
+      SceneSet.beach:        const Offset(0.50, 0.48),
+      SceneSet.peachBlossom: const Offset(0.62, 0.52),
+      SceneSet.winter:       const Offset(0.50, 0.48),
+      SceneSet.desert:       const Offset(0.26, 0.30),
+      SceneSet.cosmic:       const Offset(0.74, 0.60),
+      SceneSet.castle:       const Offset(0.67, 0.56),
     },
-    DisplayItemGroup.sleep: {          // moon pillow — right-middle (couch / seat area)
-      SceneSet.defaultSet:   const Offset(0.85, 0.62),
+    DisplayItemGroup.sleep: {          // moon pillow
+      SceneSet.defaultSet:   const Offset(0.44, 0.30),
       SceneSet.forest:       const Offset(0.85, 0.62),
-      SceneSet.beach:        const Offset(0.85, 0.62),
-      SceneSet.peachBlossom: const Offset(0.85, 0.62),
-      SceneSet.winter:       const Offset(0.85, 0.62),
+      SceneSet.beach:        const Offset(0.76, 0.58),
+      SceneSet.peachBlossom: const Offset(0.85, 0.82),
+      SceneSet.winter:       const Offset(0.76, 0.58),
       SceneSet.desert:       const Offset(0.85, 0.62),
-      SceneSet.cosmic:       const Offset(0.85, 0.62),
-      SceneSet.castle:       const Offset(0.85, 0.62),
+      SceneSet.cosmic:       const Offset(0.26, 0.42),
+      SceneSet.castle:       const Offset(0.245, 0.19),
     },
   };
 
@@ -71,45 +58,45 @@ class DisplayItemPositions {
   // Positions should not overlap. Tier-N items include all slots 0..N-1.
 
   static final Map<DisplayItemGroup, Map<SceneSet, List<Offset>>> _gameRoom = {
-    DisplayItemGroup.garden: {         // succulent pots — along background fence/wall
-      SceneSet.defaultSet:   const [Offset(0.12, 0.28), Offset(0.28, 0.24), Offset(0.44, 0.26), Offset(0.62, 0.22)],
-      SceneSet.forest:       const [Offset(0.12, 0.28), Offset(0.28, 0.24), Offset(0.44, 0.26), Offset(0.62, 0.22)],
-      SceneSet.beach:        const [Offset(0.12, 0.28), Offset(0.28, 0.24), Offset(0.44, 0.26), Offset(0.62, 0.22)],
-      SceneSet.peachBlossom: const [Offset(0.12, 0.28), Offset(0.28, 0.24), Offset(0.44, 0.26), Offset(0.62, 0.22)],
-      SceneSet.winter:       const [Offset(0.12, 0.28), Offset(0.28, 0.24), Offset(0.44, 0.26), Offset(0.62, 0.22)],
-      SceneSet.desert:       const [Offset(0.12, 0.28), Offset(0.28, 0.24), Offset(0.44, 0.26), Offset(0.62, 0.22)],
-      SceneSet.cosmic:       const [Offset(0.12, 0.28), Offset(0.28, 0.24), Offset(0.44, 0.26), Offset(0.62, 0.22)],
-      SceneSet.castle:       const [Offset(0.12, 0.28), Offset(0.28, 0.24), Offset(0.44, 0.26), Offset(0.62, 0.22)],
+    DisplayItemGroup.garden: {         // succulent, mushroom, water can, statue
+      SceneSet.defaultSet:   const [Offset(0.12, 0.70), Offset(0.20, 0.80), Offset(0.88, 0.70), Offset(0.80, 0.80)],
+      SceneSet.forest:       const [Offset(0.12, 0.90), Offset(0.20, 0.80), Offset(0.88, 0.90), Offset(0.80, 0.80)],
+      SceneSet.beach:        const [Offset(0.12, 0.90), Offset(0.20, 0.80), Offset(0.88, 0.90), Offset(0.80, 0.80)],
+      SceneSet.peachBlossom: const [Offset(0.12, 0.90), Offset(0.20, 0.80), Offset(0.88, 0.90), Offset(0.80, 0.80)],
+      SceneSet.winter:       const [Offset(0.12, 0.90), Offset(0.20, 0.80), Offset(0.88, 0.90), Offset(0.80, 0.80)],
+      SceneSet.desert:       const [Offset(0.20, 0.94), Offset(0.26, 0.86), Offset(0.74, 0.86), Offset(0.80, 0.94)],
+      SceneSet.cosmic:       const [Offset(0.20, 0.94), Offset(0.26, 0.86), Offset(0.74, 0.86), Offset(0.80, 0.94)],
+      SceneSet.castle:       const [Offset(0.20, 0.94), Offset(0.26, 0.86), Offset(0.74, 0.86), Offset(0.80, 0.94)],
     },
-    DisplayItemGroup.aquarium: {       // fish toys — bottom corners / tank floor
-      SceneSet.defaultSet:   const [Offset(0.08, 0.82), Offset(0.28, 0.88), Offset(0.55, 0.84), Offset(0.80, 0.82)],
-      SceneSet.forest:       const [Offset(0.08, 0.82), Offset(0.28, 0.88), Offset(0.55, 0.84), Offset(0.80, 0.82)],
-      SceneSet.beach:        const [Offset(0.08, 0.82), Offset(0.28, 0.88), Offset(0.55, 0.84), Offset(0.80, 0.82)],
-      SceneSet.peachBlossom: const [Offset(0.08, 0.82), Offset(0.28, 0.88), Offset(0.55, 0.84), Offset(0.80, 0.82)],
-      SceneSet.winter:       const [Offset(0.08, 0.82), Offset(0.28, 0.88), Offset(0.55, 0.84), Offset(0.80, 0.82)],
-      SceneSet.desert:       const [Offset(0.08, 0.82), Offset(0.28, 0.88), Offset(0.55, 0.84), Offset(0.80, 0.82)],
-      SceneSet.cosmic:       const [Offset(0.08, 0.82), Offset(0.28, 0.88), Offset(0.55, 0.84), Offset(0.80, 0.82)],
-      SceneSet.castle:       const [Offset(0.08, 0.82), Offset(0.28, 0.88), Offset(0.55, 0.84), Offset(0.80, 0.82)],
+    DisplayItemGroup.aquarium: {       // fish toys, treasure chest, anchor, coral
+      SceneSet.defaultSet:   const [Offset(0.54, 0.46), Offset(0.825, 0.24), Offset(0.36, 0.46), Offset(0.18, 0.46)],
+      SceneSet.forest:       const [Offset(0.36, 0.46), Offset(0.775, 0.18), Offset(0.54, 0.46), Offset(0.80, 0.82)],
+      SceneSet.beach:        const [Offset(0.88, 0.84), Offset(0.18, 0.50), Offset(0.54, 0.50), Offset(0.36, 0.50)],
+      SceneSet.peachBlossom: const [Offset(0.18, 0.50), Offset(0.54, 0.50), Offset(0.36, 0.50), Offset(0.88, 0.84)],
+      SceneSet.winter:       const [Offset(0.18, 0.50), Offset(0.54, 0.50), Offset(0.36, 0.50), Offset(0.88, 0.84)],
+      SceneSet.desert:       const [Offset(0.50, 0.20), Offset(0.20, 0.88), Offset(0.27, 0.56), Offset(0.80, 0.54)],
+      SceneSet.cosmic:       const [Offset(0.20, 0.90), Offset(0.38, 0.30), Offset(0.60, 0.30), Offset(0.80, 0.65)],
+      SceneSet.castle:       const [Offset(0.08, 0.82), Offset(0.66, 0.13), Offset(0.35, 0.45), Offset(0.77, 0.68)],
     },
-    DisplayItemGroup.painting: {       // paint tubes — shelf / worktable upper-right
-      SceneSet.defaultSet:   const [Offset(0.82, 0.35), Offset(0.88, 0.28), Offset(0.82, 0.22), Offset(0.88, 0.16)],
-      SceneSet.forest:       const [Offset(0.82, 0.35), Offset(0.88, 0.28), Offset(0.82, 0.22), Offset(0.88, 0.16)],
-      SceneSet.beach:        const [Offset(0.82, 0.35), Offset(0.88, 0.28), Offset(0.82, 0.22), Offset(0.88, 0.16)],
-      SceneSet.peachBlossom: const [Offset(0.82, 0.35), Offset(0.88, 0.28), Offset(0.82, 0.22), Offset(0.88, 0.16)],
-      SceneSet.winter:       const [Offset(0.82, 0.35), Offset(0.88, 0.28), Offset(0.82, 0.22), Offset(0.88, 0.16)],
-      SceneSet.desert:       const [Offset(0.82, 0.35), Offset(0.88, 0.28), Offset(0.82, 0.22), Offset(0.88, 0.16)],
-      SceneSet.cosmic:       const [Offset(0.82, 0.35), Offset(0.88, 0.28), Offset(0.82, 0.22), Offset(0.88, 0.16)],
-      SceneSet.castle:       const [Offset(0.82, 0.35), Offset(0.88, 0.28), Offset(0.82, 0.22), Offset(0.88, 0.16)],
+    DisplayItemGroup.painting: {       // paint tubes, palette, brushes, mini canva
+      SceneSet.defaultSet:   const [Offset(0.245, 0.80), Offset(0.12, 0.28), Offset(0.84, 0.56), Offset(0.88, 0.84)],
+      SceneSet.forest:       const [Offset(0.245, 0.80), Offset(0.88, 0.28), Offset(0.62, 0.52), Offset(0.88, 0.84)],
+      SceneSet.beach:        const [Offset(0.24, 0.84), Offset(0.88, 0.28), Offset(0.18, 0.78), Offset(0.88, 0.84)],
+      SceneSet.peachBlossom: const [Offset(0.245, 0.80), Offset(0.88, 0.28), Offset(0.62, 0.52), Offset(0.88, 0.84)],
+      SceneSet.winter:       const [Offset(0.24, 0.84), Offset(0.88, 0.28), Offset(0.18, 0.78), Offset(0.88, 0.84)],
+      SceneSet.desert:       const [Offset(0.82, 0.38), Offset(0.06, 0.58), Offset(0.16, 0.38), Offset(0.88, 0.84)],
+      SceneSet.cosmic:       const [Offset(0.10, 0.84), Offset(0.22, 0.52), Offset(0.78, 0.68), Offset(0.88, 0.84)],
+      SceneSet.castle:       const [Offset(0.12, 0.86), Offset(0.15, 0.43), Offset(0.26, 0.86), Offset(0.86, 0.86)],
     },
-    DisplayItemGroup.music: {          // note plushies — stand / shelf upper-left
-      SceneSet.defaultSet:   const [Offset(0.15, 0.30), Offset(0.25, 0.24), Offset(0.15, 0.18), Offset(0.25, 0.12)],
-      SceneSet.forest:       const [Offset(0.15, 0.30), Offset(0.25, 0.24), Offset(0.15, 0.18), Offset(0.25, 0.12)],
-      SceneSet.beach:        const [Offset(0.15, 0.30), Offset(0.25, 0.24), Offset(0.15, 0.18), Offset(0.25, 0.12)],
-      SceneSet.peachBlossom: const [Offset(0.15, 0.30), Offset(0.25, 0.24), Offset(0.15, 0.18), Offset(0.25, 0.12)],
-      SceneSet.winter:       const [Offset(0.15, 0.30), Offset(0.25, 0.24), Offset(0.15, 0.18), Offset(0.25, 0.12)],
-      SceneSet.desert:       const [Offset(0.15, 0.30), Offset(0.25, 0.24), Offset(0.15, 0.18), Offset(0.25, 0.12)],
-      SceneSet.cosmic:       const [Offset(0.15, 0.30), Offset(0.25, 0.24), Offset(0.15, 0.18), Offset(0.25, 0.12)],
-      SceneSet.castle:       const [Offset(0.15, 0.30), Offset(0.25, 0.24), Offset(0.15, 0.18), Offset(0.25, 0.12)],
+    DisplayItemGroup.music: {          // note plushie, juke box, headphone, speaker
+      SceneSet.defaultSet:   const [Offset(0.73, 0.26), Offset(0.245, 0.80), Offset(0.84, 0.56), Offset(0.28, 0.26)],
+      SceneSet.forest:       const [Offset(0.15, 0.30), Offset(0.62, 0.52), Offset(0.38, 0.52), Offset(0.85, 0.30)],
+      SceneSet.beach:        const [Offset(0.85, 0.30), Offset(0.70, 0.48), Offset(0.50, 0.46), Offset(0.24, 0.60)],
+      SceneSet.peachBlossom: const [Offset(0.15, 0.30), Offset(0.62, 0.52), Offset(0.38, 0.52), Offset(0.85, 0.30)],
+      SceneSet.winter:       const [Offset(0.15, 0.30), Offset(0.62, 0.52), Offset(0.38, 0.52), Offset(0.85, 0.30)],
+      SceneSet.desert:       const [Offset(0.92, 0.25), Offset(0.68, 0.58), Offset(0.32, 0.58), Offset(0.08, 0.20)],
+      SceneSet.cosmic:       const [Offset(0.72, 0.15), Offset(0.88, 0.84), Offset(0.38, 0.50), Offset(0.16, 0.35)],
+      SceneSet.castle:       const [Offset(0.50, 0.20), Offset(0.88, 0.84), Offset(0.12, 0.84), Offset(0.20, 0.44)],
     },
   };
 
