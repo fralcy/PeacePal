@@ -22,7 +22,7 @@ class DisplayItemService {
   ) {
     final items = <DisplayItemData>[];
     for (final group in DisplayItemGroup.values) {
-      if (group.sceneType != sceneType) continue;
+      if (group.sceneType == null || group.sceneType != sceneType) continue;
       final tier = getTier(group, progress);
       if (tier == 0) continue;
 
