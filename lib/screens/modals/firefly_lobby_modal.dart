@@ -1080,8 +1080,9 @@ class _FireflyLobbyModalState extends State<FireflyLobbyModal> {
       key: _sliderKey,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        _sliderHeader(theme, l10n.maxFireflyCount, '$_fireflyCount'),
+        const SizedBox(height: 8),
         AppSlider(
-          label: '${l10n.maxFireflyCount}: $_fireflyCount',
           value: _fireflyCount.toDouble(),
           min: 5,
           max: 20,
@@ -1107,15 +1108,13 @@ class _FireflyLobbyModalState extends State<FireflyLobbyModal> {
     final sliderLabel = _goalValue == 0
         ? l10n.endless
         : switch (effectiveType) {
-            _GoalType.achievement || _GoalType.points => '${l10n.target}: $_goalValue',
-            _GoalType.time                            => _formatGoalTime(_goalValue, l10n),
+            _GoalType.achievement || _GoalType.points => '${l10n.target}: $_goalValue ${l10n.goalCatchCount}',
+            _GoalType.time                            => '${l10n.target}: ${_formatGoalTime(_goalValue, l10n)}',
           };
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(l10n.goalEndConditionLabel,
-            style: AppTypography.bodySmall(context,
-                color: theme.border, fontWeight: FontWeight.w600)),
+        _sliderHeader(theme, l10n.goalEndConditionLabel, sliderLabel),
         const SizedBox(height: 6),
         Row(
           children: types.map((t) {
@@ -1145,9 +1144,8 @@ class _FireflyLobbyModalState extends State<FireflyLobbyModal> {
             );
           }).toList(),
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: 8),
         AppSlider(
-          label: sliderLabel,
           value: _goalValue.toDouble().clamp(min, max),
           min: min,
           max: max,
@@ -1164,6 +1162,18 @@ class _FireflyLobbyModalState extends State<FireflyLobbyModal> {
     final min = l10n.minuteAbbr;
     final sec = l10n.secondAbbr;
     return m > 0 ? (s == 0 ? '$m $min' : '$m $min $s $sec') : '$s $sec';
+  }
+
+  Widget _sliderHeader(AppTheme theme, String label, String value) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(label, style: AppTypography.bodySmall(context,
+            color: theme.text, fontWeight: FontWeight.w600)),
+        Text(value, style: AppTypography.bodySmall(context,
+            color: theme.primary, fontWeight: FontWeight.w600)),
+      ],
+    );
   }
 
   Widget _buildClientRoleSelector(AppTheme theme, AppLocalizations l10n) {

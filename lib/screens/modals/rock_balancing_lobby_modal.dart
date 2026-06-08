@@ -1202,13 +1202,26 @@ class _RockBalancingLobbyModalState extends State<RockBalancingLobbyModal> {
       key: _sliderKey,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        _sliderHeader(theme, l10n.rockCount, '$_rockCount'),
+        const SizedBox(height: 8),
         AppSlider(
-          label: '${l10n.rockCount}: $_rockCount',
           value: _rockCount.toDouble(),
           min: 4,
           max: 20,
           onChanged: (v) => setState(() => _rockCount = v.round()),
         ),
+      ],
+    );
+  }
+
+  Widget _sliderHeader(AppTheme theme, String label, String value) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(label, style: AppTypography.bodySmall(context,
+            color: theme.text, fontWeight: FontWeight.w600)),
+        Text(value, style: AppTypography.bodySmall(context,
+            color: theme.primary, fontWeight: FontWeight.w600)),
       ],
     );
   }

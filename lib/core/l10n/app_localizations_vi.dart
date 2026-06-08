@@ -429,7 +429,7 @@ class AppLocalizationsVi extends AppLocalizations {
   @override String get goalEndConditionLabel => 'Điều kiện kết thúc màn chơi';
   @override String get goalDistance => 'Khoảng cách';
   @override String get goalItems => 'Vật phẩm';
-  @override String get goalCatchCount => 'Đom đóm bắt';
+  @override String get goalCatchCount => 'đom đóm';
   @override String get goalDistanceFull => 'Khoảng cách đi được';
   @override String get goalItemsFull => 'Vật phẩm thu thập';
   @override String get goalTimeFull => 'Thời gian màn chơi';

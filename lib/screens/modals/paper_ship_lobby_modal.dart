@@ -876,16 +876,14 @@ class _PaperShipLobbyModalState extends State<PaperShipLobbyModal> {
         ? l10n.endless
         : switch (_goalType) {
             _GoalType.achievement => '${l10n.target}: $_goalValue cm',
-            _GoalType.time        => _formatGoalTime(_goalValue, l10n),
-            _GoalType.points      => '${l10n.target}: $_goalValue',
+            _GoalType.time        => '${l10n.target}: ${_formatGoalTime(_goalValue, l10n)}',
+            _GoalType.points      => '${l10n.target}: $_goalValue ${l10n.points}',
           };
     return Column(
       key: _sliderKey,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(l10n.goalEndConditionLabel,
-            style: AppTypography.bodySmall(context,
-                color: theme.border, fontWeight: FontWeight.w600)),
+        _sliderHeader(theme, l10n.goalEndConditionLabel, sliderLabel),
         const SizedBox(height: 6),
         Row(
           children: types.map((t) {
@@ -915,15 +913,26 @@ class _PaperShipLobbyModalState extends State<PaperShipLobbyModal> {
             );
           }).toList(),
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: 8),
         AppSlider(
-          label: sliderLabel,
           value: _goalValue.toDouble().clamp(min, max),
           min: min,
           max: max,
           onChanged: (v) =>
               setState(() => _goalValue = (v / step).round() * step.toInt()),
         ),
+      ],
+    );
+  }
+
+  Widget _sliderHeader(AppTheme theme, String label, String value) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(label, style: AppTypography.bodySmall(context,
+            color: theme.text, fontWeight: FontWeight.w600)),
+        Text(value, style: AppTypography.bodySmall(context,
+            color: theme.primary, fontWeight: FontWeight.w600)),
       ],
     );
   }

@@ -427,7 +427,7 @@ class AppLocalizationsEn extends AppLocalizations {
   @override String get goalEndConditionLabel => 'End condition';
   @override String get goalDistance => 'Distance';
   @override String get goalItems => 'Items';
-  @override String get goalCatchCount => 'Fireflies';
+  @override String get goalCatchCount => 'fireflies';
   @override String get goalDistanceFull => 'Distance traveled';
   @override String get goalItemsFull => 'Items collected';
   @override String get goalTimeFull => 'Session time';
