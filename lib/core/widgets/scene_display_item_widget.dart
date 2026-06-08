@@ -121,13 +121,15 @@ class _Placeholder extends StatelessWidget {
   }
 
   IconData _icon(DisplayItemGroup g) => switch (g) {
-    DisplayItemGroup.schedule  => Icons.task_alt,
-    DisplayItemGroup.diary     => Icons.book_outlined,
-    DisplayItemGroup.breathing => Icons.air,
-    DisplayItemGroup.sleep     => Icons.bedtime_outlined,
-    DisplayItemGroup.garden    => Icons.eco_outlined,
-    DisplayItemGroup.aquarium  => Icons.water_drop_outlined,
-    DisplayItemGroup.painting  => Icons.brush_outlined,
-    DisplayItemGroup.music     => Icons.music_note_outlined,
+    DisplayItemGroup.schedule   => Icons.task_alt,
+    DisplayItemGroup.diary      => Icons.book_outlined,
+    DisplayItemGroup.breathing  => Icons.air,
+    DisplayItemGroup.sleep      => Icons.bedtime_outlined,
+    DisplayItemGroup.garden     => Icons.eco_outlined,
+    DisplayItemGroup.aquarium   => Icons.water_drop_outlined,
+    DisplayItemGroup.painting   => Icons.brush_outlined,
+    DisplayItemGroup.music      => Icons.music_note_outlined,
+    DisplayItemGroup.engagement => Icons.people_outline,
+    DisplayItemGroup.score      => Icons.star_outline,
   };
 }
