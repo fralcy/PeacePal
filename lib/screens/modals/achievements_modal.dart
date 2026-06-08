@@ -53,7 +53,7 @@ class AchievementsModal {
           child: AppModal(
             isDialog: true,
             title: l10n.achievementsTitle,
-            content: _AchievementsContent(onNavigate: onNavigate),
+            content: _AchievementsContent(onNavigate: onNavigate, isDialog: true),
           ),
         ),
       ),
@@ -65,8 +65,9 @@ class AchievementsModal {
 
 class _AchievementsContent extends StatefulWidget {
   final void Function(String featureId)? onNavigate;
+  final bool isDialog;
 
-  const _AchievementsContent({this.onNavigate});
+  const _AchievementsContent({this.onNavigate, this.isDialog = false});
 
   @override
   State<_AchievementsContent> createState() => _AchievementsContentState();
@@ -133,16 +134,38 @@ class _AchievementsContentState extends State<_AchievementsContent> {
     final total = AchievementService.all.length;
     final unlocked = progress.unlockedIds.length;
 
+    final categorySections = <Widget>[];
+    if (widget.isDialog) {
+      for (int i = 0; i < _categoryOrder.length; i += 2) {
+        final cat1 = _categoryOrder[i];
+        final cat2 = i + 1 < _categoryOrder.length ? _categoryOrder[i + 1] : null;
+        categorySections.add(Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(child: _buildCategorySection(context, l10n, cat1, progress, totalPoints)),
+            const SizedBox(width: 16),
+            Expanded(
+              child: cat2 != null
+                  ? _buildCategorySection(context, l10n, cat2, progress, totalPoints)
+                  : const SizedBox(),
+            ),
+          ],
+        ));
+        categorySections.add(const SizedBox(height: 20));
+      }
+    } else {
+      for (final cat in _categoryOrder) {
+        categorySections.add(_buildCategorySection(context, l10n, cat, progress, totalPoints));
+        categorySections.add(const SizedBox(height: 20));
+      }
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildProgressHeader(context, l10n, unlocked, total),
         const SizedBox(height: 20),
-
-        for (final cat in _categoryOrder) ...[
-          _buildCategorySection(context, l10n, cat, progress, totalPoints),
-          const SizedBox(height: 20),
-        ],
+        ...categorySections,
       ],
     );
   }
@@ -280,6 +303,7 @@ class _AchievementsContentState extends State<_AchievementsContent> {
             border: Border.all(color: _isDebugMode ? Colors.deepPurple : theme.border),
           ),
           child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: List.generate(4, (i) {
               final slotTier = i + 1;
               final achId = group.achievementIds[i];
