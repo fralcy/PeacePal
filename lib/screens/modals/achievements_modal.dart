@@ -88,6 +88,7 @@ class _AchievementsContentState extends State<_AchievementsContent> {
   }
 
   static const _categoryOrder = [
+    AchievementCategory.engagement,
     AchievementCategory.schedule,
     AchievementCategory.diary,
     AchievementCategory.breathing,
@@ -96,7 +97,6 @@ class _AchievementsContentState extends State<_AchievementsContent> {
     AchievementCategory.aquarium,
     AchievementCategory.painting,
     AchievementCategory.music,
-    AchievementCategory.engagement,
     AchievementCategory.score,
   ];
 
@@ -109,8 +109,8 @@ class _AchievementsContentState extends State<_AchievementsContent> {
     AchievementCategory.aquarium:  DisplayItemGroup.aquarium,
     AchievementCategory.painting:  DisplayItemGroup.painting,
     AchievementCategory.music:     DisplayItemGroup.music,
-    AchievementCategory.engagement: null,
-    AchievementCategory.score:      null,
+    AchievementCategory.engagement: DisplayItemGroup.engagement,
+    AchievementCategory.score:      DisplayItemGroup.score,
   };
 
   static const _categoryFeatureId = {
@@ -229,7 +229,7 @@ class _AchievementsContentState extends State<_AchievementsContent> {
   ) {
     final theme = context.theme;
     final tier = DisplayItemService.getTier(group, progress);
-    final tracking = _trackingInfo(group, progress);
+    final tracking = _trackingInfo(group, progress, totalPoints: totalPoints);
     final featureId = _categoryFeatureId[cat];
 
     return Column(
@@ -357,18 +357,21 @@ class _AchievementsContentState extends State<_AchievementsContent> {
 
   static ({int current, int maxTarget, String unit}) _trackingInfo(
     DisplayItemGroup group,
-    AchievementProgress progress,
-  ) {
+    AchievementProgress progress, {
+    int totalPoints = 0,
+  }) {
     int c(String key) => progress.counter(key);
     return switch (group) {
-      DisplayItemGroup.schedule  => (current: c(AchievementService.kScheduleTaskCount), maxTarget: 150, unit: 'tasks'),
-      DisplayItemGroup.diary     => (current: c(AchievementService.kDiaryCount),         maxTarget: 30,  unit: 'entries'),
-      DisplayItemGroup.breathing => (current: c(AchievementService.kBreathingTotal),     maxTarget: 30,  unit: 'sessions'),
-      DisplayItemGroup.sleep     => (current: c(AchievementService.kSleepLogCount),      maxTarget: 30,  unit: 'logs'),
-      DisplayItemGroup.garden    => (current: c(AchievementService.kPlantCount),         maxTarget: 160, unit: 'plants'),
-      DisplayItemGroup.aquarium  => (current: c(AchievementService.kFishFedCount),       maxTarget: 300, unit: 'feedings'),
-      DisplayItemGroup.painting  => (current: c(AchievementService.kPixelsPainted),      maxTarget: 5120,unit: 'pixels'),
-      DisplayItemGroup.music     => (current: c(AchievementService.kNotesChanged),       maxTarget: 600, unit: 'notes'),
+      DisplayItemGroup.schedule   => (current: c(AchievementService.kScheduleTaskCount), maxTarget: 150,   unit: 'tasks'),
+      DisplayItemGroup.diary      => (current: c(AchievementService.kDiaryCount),         maxTarget: 30,   unit: 'entries'),
+      DisplayItemGroup.breathing  => (current: c(AchievementService.kBreathingTotal),     maxTarget: 30,   unit: 'sessions'),
+      DisplayItemGroup.sleep      => (current: c(AchievementService.kSleepLogCount),      maxTarget: 30,   unit: 'logs'),
+      DisplayItemGroup.garden     => (current: c(AchievementService.kPlantCount),         maxTarget: 160,  unit: 'plants'),
+      DisplayItemGroup.aquarium   => (current: c(AchievementService.kFishFedCount),       maxTarget: 300,  unit: 'feedings'),
+      DisplayItemGroup.painting   => (current: c(AchievementService.kPixelsPainted),      maxTarget: 5120, unit: 'pixels'),
+      DisplayItemGroup.music      => (current: c(AchievementService.kNotesChanged),       maxTarget: 600,  unit: 'notes'),
+      DisplayItemGroup.engagement => (current: c(AchievementService.kDaysUsed),           maxTarget: 30,   unit: 'days'),
+      DisplayItemGroup.score      => (current: totalPoints,                                maxTarget: 20000, unit: 'points'),
     };
   }
 
@@ -515,8 +518,10 @@ class _ShelfSlot extends StatelessWidget {
     DisplayItemGroup.sleep     => Icons.bedtime_outlined,
     DisplayItemGroup.garden    => Icons.eco_outlined,
     DisplayItemGroup.aquarium  => Icons.water_drop_outlined,
-    DisplayItemGroup.painting  => Icons.brush_outlined,
-    DisplayItemGroup.music     => Icons.music_note_outlined,
+    DisplayItemGroup.painting   => Icons.brush_outlined,
+    DisplayItemGroup.music      => Icons.music_note_outlined,
+    DisplayItemGroup.engagement => Icons.people_outline,
+    DisplayItemGroup.score      => Icons.star_outline,
   };
 }
 
