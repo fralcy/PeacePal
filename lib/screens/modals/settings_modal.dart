@@ -629,11 +629,23 @@ class _SettingsModalState extends State<SettingsModal> {
                   _saveSettings();
                 });
                 SfxService().changeVolume(newVolume);
-                
-                // Play test sound để nghe volume
-                SfxService().buttonClick();
               },
               showValue: true,
+            ),
+            const SizedBox(height: 8),
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton.icon(
+                onPressed: () => SfxService().buttonClick(),
+                icon: Icon(Icons.volume_up_rounded, size: 16, color: theme.primary),
+                label: Text(l10n.previewSound,
+                    style: AppTypography.bodySmall(context, color: theme.primary)),
+                style: TextButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  minimumSize: Size.zero,
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+              ),
             ),
           ],
         ]),

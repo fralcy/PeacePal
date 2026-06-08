@@ -62,6 +62,7 @@ abstract class AppLocalizations {
   // Settings Modal - Display
   String get display;
   String get preview;
+  String get previewSound;
   
   // Settings Modal - Mascot
   String get mascot;

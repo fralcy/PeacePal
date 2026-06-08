@@ -131,7 +131,8 @@ class AppLocalizationsEn extends AppLocalizations {
   
   @override
   String get preview => 'Preview:';
-  
+  @override String get previewSound => 'Preview sound';
+
   @override
   String get mascot => 'Mascot';
   

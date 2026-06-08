@@ -701,7 +701,6 @@ class _MobilePortraitWelcomeScreenState extends State<MobilePortraitWelcomeScree
                               _settings = _settings.copyWith(sfxVolume: newVolume);
                             });
                             SfxService().changeVolume(newVolume);
-                            SfxService().buttonClick();
                           },
                         ),
                       ),

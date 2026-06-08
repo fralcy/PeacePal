@@ -133,7 +133,8 @@ class AppLocalizationsVi extends AppLocalizations {
   
   @override
   String get preview => 'Xem trước:';
-  
+  @override String get previewSound => 'Nghe thử';
+
   @override
   String get mascot => 'Linh vật';
   
