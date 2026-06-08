@@ -1492,6 +1492,7 @@ class AppLocalizationsVi extends AppLocalizations {
       case 'music_notes_60': return 'Giai điệu đầu tiên';
       case 'music_notes_300': return 'Nhạc sĩ tập sự';
       case 'music_notes_600': return 'Nhạc sĩ bậc thầy';
+      case 'score_100': return 'Tia lửa đầu tiên';
       case 'score_1000': return 'Nghìn điểm';
       case 'score_5000': return 'Người tích lũy';
       case 'score_20000': return 'Huyền thoại điểm số';
@@ -1538,6 +1539,7 @@ class AppLocalizationsVi extends AppLocalizations {
       case 'music_notes_60': return 'Đặt 60 nốt nhạc';
       case 'music_notes_300': return 'Đặt 300 nốt nhạc';
       case 'music_notes_600': return 'Đặt 600 nốt nhạc';
+      case 'score_100': return 'Kiếm tổng cộng 100 điểm';
       case 'score_1000': return 'Kiếm tổng cộng 1.000 điểm';
       case 'score_5000': return 'Kiếm tổng cộng 5.000 điểm';
       case 'score_20000': return 'Kiếm tổng cộng 20.000 điểm';

@@ -1490,6 +1490,7 @@ class AppLocalizationsEn extends AppLocalizations {
       case 'music_notes_60': return 'First Melody';
       case 'music_notes_300': return 'Music Maker';
       case 'music_notes_600': return 'Music Master';
+      case 'score_100': return 'First Sparks';
       case 'score_1000': return 'Getting Started';
       case 'score_5000': return 'High Achiever';
       case 'score_20000': return 'Legendary';
@@ -1536,6 +1537,7 @@ class AppLocalizationsEn extends AppLocalizations {
       case 'music_notes_60': return 'Place 60 notes in your compositions';
       case 'music_notes_300': return 'Place 300 notes in your compositions';
       case 'music_notes_600': return 'Place 600 notes in your compositions';
+      case 'score_100': return 'Earn a total of 100 points';
       case 'score_1000': return 'Earn a total of 1,000 points';
       case 'score_5000': return 'Earn a total of 5,000 points';
       case 'score_20000': return 'Earn a total of 20,000 points';

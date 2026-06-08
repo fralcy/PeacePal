@@ -395,7 +395,15 @@ class AchievementService {
       category: AchievementCategory.music,
     ),
 
-    // === SCORE (3) ===
+    // === SCORE (4) ===
+    Achievement(
+      id: 'score_100',
+      titleGetter: () => 'Score: 100',
+      descriptionGetter: () => 'Earn a total of 100 points',
+      icon: Icons.star_outline,
+      pointsReward: 0,
+      category: AchievementCategory.score,
+    ),
     Achievement(
       id: 'score_1000',
       titleGetter: () => 'Score: 1K',
@@ -741,6 +749,7 @@ class AchievementService {
     final p = _load();
 
     final candidates = <String>[
+      if (totalPoints >= 100) 'score_100',
       if (totalPoints >= 1000) 'score_1000',
       if (totalPoints >= 5000) 'score_5000',
       if (totalPoints >= 20000) 'score_20000',
@@ -830,6 +839,7 @@ class AchievementService {
       if (scheduleTaskCount >= 150) 'schedule_task_150',
       if ((p.counters[kPixelsPainted] ?? 0) >= 1) 'first_painting',
       if ((p.counters[kNotesChanged] ?? 0) >= 1) 'first_music',
+      if (totalPoints >= 100) 'score_100',
       if (totalPoints >= 1000) 'score_1000',
       if (totalPoints >= 5000) 'score_5000',
       if (totalPoints >= 20000) 'score_20000',
