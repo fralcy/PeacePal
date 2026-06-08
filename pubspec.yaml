@@ -132,6 +132,10 @@ flutter:
     - assets/audio/sfx/task_complete.mp3
     - assets/audio/sfx/page_transition.mp3
     - assets/audio/sfx/reward.mp3
+    - assets/audio/sfx/celebration.mp3
+    - assets/audio/sfx/rock_hit.mp3
+    - assets/audio/sfx/rock_land.mp3
+    - assets/audio/sfx/item_tap.mp3
     # Audio - Instruments
     - assets/audio/instruments/piano/
     - assets/audio/instruments/guitar/
