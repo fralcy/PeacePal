@@ -1072,10 +1072,10 @@ class _PaperShipPainter extends CustomPainter {
   }
 
   void _drawCoin(Canvas canvas, Offset pos) {
-    canvas.drawCircle(pos, 5.0, Paint()..color = const Color(0xFFFFD54F));
+    canvas.drawCircle(pos, 20.0, Paint()..color = const Color(0xFFFFD54F));
     canvas.drawCircle(
       pos,
-      5.0,
+      20.0,
       Paint()
         ..color = const Color(0xFFF9A825)
         ..style = PaintingStyle.stroke
@@ -1085,14 +1085,14 @@ class _PaperShipPainter extends CustomPainter {
 
   void _drawLeaf(Canvas canvas, Offset pos) {
     final path = Path()
-      ..moveTo(pos.dx, pos.dy - 5)
-      ..quadraticBezierTo(pos.dx + 5, pos.dy, pos.dx, pos.dy + 5)
-      ..quadraticBezierTo(pos.dx - 5, pos.dy, pos.dx, pos.dy - 5)
+      ..moveTo(pos.dx, pos.dy - 20)
+      ..quadraticBezierTo(pos.dx + 20, pos.dy, pos.dx, pos.dy + 20)
+      ..quadraticBezierTo(pos.dx - 20, pos.dy, pos.dx, pos.dy - 20)
       ..close();
     canvas.drawPath(path, Paint()..color = const Color(0xFF66BB6A));
     canvas.drawLine(
-      pos + const Offset(0, -4),
-      pos + const Offset(0, 4),
+      pos + const Offset(0, -16),
+      pos + const Offset(0, 16),
       Paint()
         ..color = const Color(0xFF388E3C)
         ..strokeWidth = 0.8
@@ -1101,8 +1101,8 @@ class _PaperShipPainter extends CustomPainter {
   }
 
   void _drawStar(Canvas canvas, Offset pos) {
-    const outerR = 5.0;
-    const innerR = 2.5;
+    const outerR = 20.0;
+    const innerR = 10.0;
     const pts = 5;
     final path = Path();
     for (int i = 0; i < pts * 2; i++) {

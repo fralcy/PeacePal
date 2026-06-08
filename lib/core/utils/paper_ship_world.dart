@@ -184,7 +184,7 @@ class PaperShipWorld {
   static const double _boatRadius = 18.0;
 
   // Collectibles
-  static const double _collectiblePickupRadius = 28.0;
+  static const double _collectiblePickupRadius = 56.0;
   static const double _collectibleSpawnInterval = 4.5;  // seconds between spawns
   static const double _collectibleGracePeriod = 1.0;    // keep col:true in payload
 
