@@ -7,6 +7,7 @@ import '../constants/app_assets.dart';
 class SceneShopService {
   final SceneProvider _sceneProvider;
   final ScoreProvider _scoreProvider;
+  bool _isPurchasing = false;
 
   SceneShopService({
     required SceneProvider sceneProvider,
@@ -68,19 +69,22 @@ class SceneShopService {
 
   /// Mua scene collection
   Future<void> purchaseSceneCollection(SceneSet sceneSet) async {
+    if (_isPurchasing) return;
     if (_sceneProvider.isSceneSetUnlocked(sceneSet)) return;
 
     int price = AppAssets.sceneCollections[sceneSet]?['price'] ?? 0;
     if (_scoreProvider.currentPoints < price) return;
 
-    // Subtract points first through ScoreProvider
-    await _scoreProvider.subtractPoints(price);
-    
-    // Then unlock the scene set without subtracting points again
-    bool success = await _sceneProvider.unlockSceneSetOnly(sceneSet);
-    if (success) {
-      _scoreProvider.refresh();
-      _sceneProvider.refresh();
+    _isPurchasing = true;
+    try {
+      await _scoreProvider.subtractPoints(price);
+      bool success = await _sceneProvider.unlockSceneSetOnly(sceneSet);
+      if (success) {
+        _scoreProvider.refresh();
+        _sceneProvider.refresh();
+      }
+    } finally {
+      _isPurchasing = false;
     }
   }
 
