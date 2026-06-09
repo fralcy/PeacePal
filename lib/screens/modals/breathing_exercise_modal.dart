@@ -534,7 +534,7 @@ class _BreathingExerciseModalState extends State<BreathingExerciseModal>
         durationSeconds: _elapsedSeconds,
         cyclesCompleted: _cyclesCompleted,
       );
-      DataManager().addBreathingSession(session);
+      await DataManager().addBreathingSession(session);
       SfxService().taskComplete();
 
       // Achievement trigger
