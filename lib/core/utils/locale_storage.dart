@@ -21,9 +21,9 @@ class LocaleStorage {
   }
   
   /// Lưu locale mới
-  static void saveLocale(Locale locale) {
+  static Future<void> saveLocale(Locale locale) async {
     final currentSettings = DataManager().userSettings;
-    DataManager().saveUserSettings(
+    await DataManager().saveUserSettings(
       currentSettings.copyWith(currentLanguage: locale.languageCode),
     );
   }

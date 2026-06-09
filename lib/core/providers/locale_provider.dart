@@ -15,22 +15,22 @@ class LocaleProvider extends ChangeNotifier {
   void _loadLocale() {
     final savedLocale = LocaleStorage.getLocale();
     _currentLocale = savedLocale;
-    notifyListeners();
   }
 
   /// Reload locale từ DataManager (sau khi sync)
   void refresh() {
     _loadLocale();
+    notifyListeners();
   }
 
   /// Đổi locale và lưu vào storage
-  void setLocale(String languageCode) {
+  Future<void> setLocale(String languageCode) async {
     if (languageCode == _currentLocale.languageCode) return;
 
     final newLocale = Locale(languageCode);
     _currentLocale = newLocale;
-    LocaleStorage.saveLocale(newLocale);
-    
     notifyListeners();
+
+    await LocaleStorage.saveLocale(newLocale);
   }
 }
