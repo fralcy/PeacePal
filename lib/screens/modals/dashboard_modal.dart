@@ -176,7 +176,7 @@ class _DashboardModalState extends State<DashboardModal> {
           sleep.durationHours != null &&
           sleep.quality != null;
     }).length;
-    final insightCard = (recentDiaryCount >= 3 && pairedCount >= 5)
+    final insightCard = (pairedCount >= 5)
         ? AppCard(
             title: l10n.insightTitle,
             content: _InsightSection(l10n: l10n, theme: theme),
