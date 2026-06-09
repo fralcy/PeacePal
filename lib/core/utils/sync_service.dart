@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'auth_service.dart';
 import 'data_manager.dart';
 import 'encryption_util.dart';
@@ -411,7 +412,9 @@ class SyncService {
                 .map((m) => _sleepLogFromMap(m as Map<String, dynamic>))
                 .toList();
           }
-        } catch (_) {}
+        } catch (e) {
+          debugPrint('[SyncService] Failed to decrypt sleep logs: $e');
+        }
       }
       await _dataManager.saveSleepLogs(sleepLogs);
 
@@ -426,7 +429,9 @@ class SyncService {
                 .map((m) => _breathingSessionFromMap(m as Map<String, dynamic>))
                 .toList();
           }
-        } catch (_) {}
+        } catch (e) {
+          debugPrint('[SyncService] Failed to decrypt breathing sessions: $e');
+        }
       }
       await _dataManager.saveBreathingSessions(breathingSessions);
 
@@ -497,9 +502,9 @@ class SyncService {
       email: map['email'] ?? '',
       name: map['name'] ?? '',
       mascotName: map['mascotName'] ?? 'Cat',
-      createdAt: (map['createdAt'] as Timestamp).toDate(),
-      lastSyncedAt: (map['lastSyncedAt'] as Timestamp).toDate(),
-      lastUpdatedAt: (map['lastUpdatedAt'] as Timestamp).toDate(),
+      createdAt: map['createdAt'] != null ? (map['createdAt'] as Timestamp).toDate() : DateTime.now(),
+      lastSyncedAt: map['lastSyncedAt'] != null ? (map['lastSyncedAt'] as Timestamp).toDate() : DateTime.now(),
+      lastUpdatedAt: map['lastUpdatedAt'] != null ? (map['lastUpdatedAt'] as Timestamp).toDate() : DateTime.now(),
       unlockedScenes: unlockedScenes,
       currentPoints: map['currentPoints'] ?? 0,
       totalPoints: map['totalPoints'] ?? 0,
