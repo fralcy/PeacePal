@@ -153,12 +153,21 @@ class Notifier {
     }
   }
 
-  /// Kiểm tra quyền notification
+  /// Kiểm tra quyền notification (bao gồm quyền lên lịch chính xác trên Android 12+)
   static Future<bool> requestPermissions() async {
     final isAllowed = await AwesomeNotifications().isNotificationAllowed();
 
     if (!isAllowed) {
-      return await AwesomeNotifications().requestPermissionToSendNotifications();
+      final granted = await AwesomeNotifications().requestPermissionToSendNotifications();
+      if (!granted) return false;
+    }
+
+    final hasPreciseAlarms = await AwesomeNotifications()
+        .checkPermissionList(permissions: [NotificationPermission.PreciseAlarms]);
+    if (hasPreciseAlarms.isEmpty) {
+      await AwesomeNotifications().requestPermissionToSendNotifications(
+        permissions: [NotificationPermission.PreciseAlarms],
+      );
     }
 
     return true;
