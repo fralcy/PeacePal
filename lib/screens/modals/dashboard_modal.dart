@@ -161,10 +161,6 @@ class _DashboardModalState extends State<DashboardModal> {
     final today = DateTime(now.year, now.month, now.day);
     final insightCutoff = today.subtract(const Duration(days: 13));
     final dm = DataManager();
-    final recentDiaryCount = dm.emotionDiaries.where((d) {
-      final date = DateTime(d.date.year, d.date.month, d.date.day);
-      return !date.isBefore(insightCutoff);
-    }).length;
     final pairedCount = dm.emotionDiaries.where((d) {
       final date = DateTime(d.date.year, d.date.month, d.date.day);
       if (date.isBefore(insightCutoff)) return false;
