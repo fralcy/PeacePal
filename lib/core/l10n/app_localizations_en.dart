@@ -1156,6 +1156,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get exerciseCalmDesc => '4·2·6·2 — Emotional balance, anytime';
 
   @override
+  String get customizePhases => 'Customize';
+
+  @override
+  String get customizePhasesTitle => 'Customize phase durations';
+
+  @override
+  String get customizePhasesDesc =>
+      'The cycle is just an example — adjust it to your own pace, as long as the breathing rate stays close to the recommended range.';
+
+  @override
+  String get breathsPerMinute => 'breaths/min';
+
+  @override
   String get tutorialBreathing478Title => '4-7-8 Breathing';
   @override
   String get tutorialBreathing478Desc => 'Developed by Dr. Andrew Weil. Inhale 4s → Hold 7s → Exhale 8s (through the mouth). The extended exhale activates the parasympathetic nervous system, slowing heart rate and rapidly easing tension.\nBest for: preparing for sleep, acute anxiety, or recovery after high-stress situations.';

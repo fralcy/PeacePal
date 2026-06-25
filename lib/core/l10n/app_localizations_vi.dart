@@ -1158,6 +1158,19 @@ class AppLocalizationsVi extends AppLocalizations {
   String get exerciseCalmDesc => '4·2·6·2 — Cân bằng cảm xúc mọi lúc';
 
   @override
+  String get customizePhases => 'Tùy chỉnh';
+
+  @override
+  String get customizePhasesTitle => 'Tùy chỉnh độ dài từng pha';
+
+  @override
+  String get customizePhasesDesc =>
+      'Chu kỳ chỉ là ví dụ — bạn có thể điều chỉnh theo khả năng cá nhân, miễn nhịp thở vẫn gần mức khuyến nghị.';
+
+  @override
+  String get breathsPerMinute => 'lần thở/phút';
+
+  @override
   String get tutorialBreathing478Title => 'Hít thở 4-7-8';
   @override
   String get tutorialBreathing478Desc => 'Phát triển bởi Dr. Andrew Weil. Hít 4 giây → Giữ 7 giây → Thở ra 8 giây qua miệng. Thở ra kéo dài kích hoạt thần kinh phó giao cảm, hạ nhịp tim và giải tỏa căng thẳng nhanh chóng.\nNên dùng khi: chuẩn bị đi ngủ, đang lo âu cấp tính hoặc sau tình huống căng thẳng cao.';
