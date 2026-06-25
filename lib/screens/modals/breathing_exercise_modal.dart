@@ -11,7 +11,9 @@ import '../../core/utils/breathing_exercise_service.dart';
 import '../../core/utils/sfx_service.dart';
 import '../../core/l10n/app_localizations.dart';
 import '../../core/widgets/mascot_sprite_widget.dart';
+import '../../core/widgets/app_slider.dart';
 import '../../models/breathing_session.dart';
+import '../../models/user_settings.dart';
 import '../../models/scene_models.dart';
 import 'package:provider/provider.dart';
 import '../../core/providers/score_provider.dart';
@@ -143,6 +145,56 @@ class _BreathingExerciseModalState extends State<BreathingExerciseModal>
 
   final BreathingExerciseService _service = BreathingExerciseService();
 
+  /// Cấu hình pha tùy chỉnh hiện tại cho bài đang chọn (null = dùng mặc định)
+  Map<String, int>? get _customPhases {
+    if (_selectedExercise == null) return null;
+    final settings = DataManager().userSettings;
+    switch (_selectedExercise) {
+      case 'deep_belly':
+        return settings.customDeepBellyPhases;
+      case 'calm':
+        return settings.customCalmPhases;
+      default:
+        return null;
+    }
+  }
+
+  bool get _isCustomizable =>
+      _selectedExercise != null &&
+      BreathingExerciseService.customizableExercises
+          .contains(_selectedExercise);
+
+  Future<void> _openCustomizeDialog() async {
+    if (_selectedExercise == null) return;
+    final exerciseType = _selectedExercise!;
+    final defaults = BreathingExerciseService.exercises[exerciseType]!;
+    final current = _customPhases ?? defaults;
+    await showDialog<void>(
+      context: context,
+      builder: (context) => _PhaseCustomizeDialog(
+        exerciseType: exerciseType,
+        initialPhases: current,
+        service: _service,
+        onSave: (phases) async {
+          final settings = DataManager().userSettings;
+          final updated = exerciseType == 'deep_belly'
+              ? settings.copyWith(customDeepBellyPhases: phases)
+              : settings.copyWith(customCalmPhases: phases);
+          await DataManager().saveUserSettings(updated);
+          if (mounted) setState(() {});
+        },
+        onResetToDefault: () async {
+          final settings = DataManager().userSettings;
+          final updated = exerciseType == 'deep_belly'
+              ? settings.copyWith(clearCustomDeepBellyPhases: true)
+              : settings.copyWith(clearCustomCalmPhases: true);
+          await DataManager().saveUserSettings(updated);
+          if (mounted) setState(() {});
+        },
+      ),
+    );
+  }
+
   @override
   void initState() {
     super.initState();
@@ -227,7 +279,16 @@ class _BreathingExerciseModalState extends State<BreathingExerciseModal>
                 style: AppTypography.h4(context),
               ),
             ),
-            const SizedBox(width: 48),
+            SizedBox(
+              width: 48,
+              child: (_isCustomizable && !_isActive)
+                  ? IconButton(
+                      icon: const Icon(Icons.tune),
+                      tooltip: l10n.customizePhases,
+                      onPressed: _openCustomizeDialog,
+                    )
+                  : null,
+            ),
           ],
         ),
 
@@ -437,7 +498,8 @@ class _BreathingExerciseModalState extends State<BreathingExerciseModal>
         _elapsedSeconds++;
 
         // Check cycle completion
-        final cycleDuration = _service.getCycleDuration(_selectedExercise!);
+        final cycleDuration =
+            _service.getCycleDuration(_selectedExercise!, _customPhases);
         if (_elapsedSeconds % cycleDuration == 0) {
           _cyclesCompleted++;
           cycleJustCompleted = true;
@@ -495,9 +557,12 @@ class _BreathingExerciseModalState extends State<BreathingExerciseModal>
   void _updatePhaseAndAnimation() {
     if (_selectedExercise == null) return;
 
-    final cycleDuration = _service.getCycleDuration(_selectedExercise!);
+    final customPhases = _customPhases;
+    final cycleDuration =
+        _service.getCycleDuration(_selectedExercise!, customPhases);
     final elapsedInCycle = _elapsedSeconds % cycleDuration;
-    final phaseData = _service.getCurrentPhase(_selectedExercise!, elapsedInCycle);
+    final phaseData = _service.getCurrentPhase(
+        _selectedExercise!, elapsedInCycle, customPhases);
 
     _currentPhase = phaseData['phase'] as String;
     _currentProgress = phaseData['progress'] as double;
@@ -629,6 +694,126 @@ class _ExerciseCard extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+/// Dialog cho phép tùy chỉnh độ dài từng pha của Thở bụng sâu / Thở bình tĩnh
+class _PhaseCustomizeDialog extends StatefulWidget {
+  final String exerciseType;
+  final Map<String, int> initialPhases;
+  final BreathingExerciseService service;
+  final ValueChanged<Map<String, int>> onSave;
+  final VoidCallback onResetToDefault;
+
+  const _PhaseCustomizeDialog({
+    required this.exerciseType,
+    required this.initialPhases,
+    required this.service,
+    required this.onSave,
+    required this.onResetToDefault,
+  });
+
+  @override
+  State<_PhaseCustomizeDialog> createState() => _PhaseCustomizeDialogState();
+}
+
+class _PhaseCustomizeDialogState extends State<_PhaseCustomizeDialog> {
+  late Map<String, int> _phases;
+
+  List<String> get _order =>
+      BreathingExerciseService.activePhaseOrder[widget.exerciseType]!;
+
+  @override
+  void initState() {
+    super.initState();
+    _phases = Map<String, int>.from(widget.initialPhases);
+  }
+
+  void _updatePhase(String key, double value) {
+    setState(() {
+      _phases[key] = value.round();
+      _phases = widget.service.clampCustomPhases(widget.exerciseType, _phases);
+    });
+  }
+
+  String _phaseLabel(String key, AppLocalizations l10n) {
+    switch (key) {
+      case 'inhale':
+        return l10n.breatheIn;
+      case 'hold':
+        return l10n.hold;
+      case 'exhale':
+        return l10n.breatheOut;
+      case 'pause':
+      default:
+        return l10n.pause;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final bpm = widget.service.getBreathsPerMinute(_phases);
+
+    return AlertDialog(
+      title: Text(l10n.customizePhasesTitle),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              l10n.customizePhasesDesc,
+              style: AppTypography.bodySmall(context),
+            ),
+            const SizedBox(height: 16),
+            for (final key in _order)
+              AppSlider(
+                value: (_phases[key] ?? 0).toDouble(),
+                min: key == 'pause'
+                    ? (BreathingExerciseService
+                            .pauseBoundsByExercise[widget.exerciseType]![0])
+                        .toDouble()
+                    : BreathingExerciseService.minPhaseSeconds.toDouble(),
+                max: key == 'pause'
+                    ? (BreathingExerciseService
+                            .pauseBoundsByExercise[widget.exerciseType]![1])
+                        .toDouble()
+                    : BreathingExerciseService.maxPhaseSeconds.toDouble(),
+                label: '${_phaseLabel(key, l10n)} (giây)',
+                showValue: true,
+                onChanged: (v) => _updatePhase(key, v),
+              ),
+            const SizedBox(height: 8),
+            Text(
+              '${bpm.toStringAsFixed(1)} ${l10n.breathsPerMinute}',
+              style: AppTypography.bodyMedium(context)
+                  .copyWith(fontWeight: FontWeight.bold),
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () {
+            widget.onResetToDefault();
+            Navigator.of(context).pop();
+          },
+          child: Text(l10n.resetToDefault),
+        ),
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: Text(l10n.cancel),
+        ),
+        AppButton(
+          label: l10n.save,
+          onPressed: () {
+            widget.onSave(_phases);
+            Navigator.of(context).pop();
+          },
+        ),
+      ],
     );
   }
 }
