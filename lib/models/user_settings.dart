@@ -43,6 +43,13 @@ class UserSettings {
   @HiveField(10)
   final int taskReminderTime;        // Nhắc trước task X phút (ví dụ: 15)
 
+  // Breathing Exercise Customization (chỉ áp dụng cho deep_belly và calm)
+  @HiveField(11)
+  final Map<String, int>? customDeepBellyPhases; // {'inhale','hold','exhale'} tùy chỉnh cho Thở bụng sâu
+
+  @HiveField(12)
+  final Map<String, int>? customCalmPhases;      // {'inhale','hold','exhale','pause'} tùy chỉnh cho Thở bình tĩnh
+
   UserSettings({
     required this.currentTheme,
     required this.currentLanguage,
@@ -55,6 +62,8 @@ class UserSettings {
     required this.sleepReminderTimeMinutes,
     required this.taskReminderEnabled,
     required this.taskReminderTime,
+    this.customDeepBellyPhases,
+    this.customCalmPhases,
   });
 
   // Helper getter để convert minutes sang TimeOfDay
@@ -106,6 +115,10 @@ class UserSettings {
     TimeOfDay? sleepReminderTime, // Cho phép truyền TimeOfDay
     bool? taskReminderEnabled,
     int? taskReminderTime,
+    Map<String, int>? customDeepBellyPhases,
+    Map<String, int>? customCalmPhases,
+    bool clearCustomDeepBellyPhases = false,
+    bool clearCustomCalmPhases = false,
   }) {
     // Nếu truyền TimeOfDay, convert sang minutes
     int? finalSleepMinutes = sleepReminderTimeMinutes;
@@ -125,6 +138,12 @@ class UserSettings {
       sleepReminderTimeMinutes: finalSleepMinutes ?? this.sleepReminderTimeMinutes,
       taskReminderEnabled: taskReminderEnabled ?? this.taskReminderEnabled,
       taskReminderTime: taskReminderTime ?? this.taskReminderTime,
+      customDeepBellyPhases: clearCustomDeepBellyPhases
+          ? null
+          : (customDeepBellyPhases ?? this.customDeepBellyPhases),
+      customCalmPhases: clearCustomCalmPhases
+          ? null
+          : (customCalmPhases ?? this.customCalmPhases),
     );
   }
 }

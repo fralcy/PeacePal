@@ -28,13 +28,17 @@ class UserSettingsAdapter extends TypeAdapter<UserSettings> {
       sleepReminderTimeMinutes: fields[8] as int,
       taskReminderEnabled: fields[9] as bool,
       taskReminderTime: fields[10] as int,
+      customDeepBellyPhases: (fields[11] as Map?)?.map(
+          (dynamic k, dynamic v) => MapEntry(k as String, v as int)),
+      customCalmPhases: (fields[12] as Map?)?.map(
+          (dynamic k, dynamic v) => MapEntry(k as String, v as int)),
     );
   }
 
   @override
   void write(BinaryWriter writer, UserSettings obj) {
     writer
-      ..writeByte(11)
+      ..writeByte(13)
       ..writeByte(0)
       ..write(obj.currentTheme)
       ..writeByte(1)
@@ -56,7 +60,11 @@ class UserSettingsAdapter extends TypeAdapter<UserSettings> {
       ..writeByte(9)
       ..write(obj.taskReminderEnabled)
       ..writeByte(10)
-      ..write(obj.taskReminderTime);
+      ..write(obj.taskReminderTime)
+      ..writeByte(11)
+      ..write(obj.customDeepBellyPhases)
+      ..writeByte(12)
+      ..write(obj.customCalmPhases);
   }
 
   @override
