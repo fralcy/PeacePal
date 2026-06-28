@@ -129,10 +129,25 @@ class LanServer implements LanServerBase {
           }
         }
       },
-      onDone: () => _clients.remove(clientId),
-      onError: (_) => _clients.remove(clientId),
+      onDone: () => _handleClientGone(clientId),
+      onError: (_) => _handleClientGone(clientId),
       cancelOnError: true,
     );
+  }
+
+  /// Handles unexpected socket closure (crash, force-close, network drop).
+  /// Emits a synthetic bye so GameRoomProvider/game modals can notify the
+  /// host and keep the room running, mirroring lan_server_web.dart's
+  /// peer.onClosed behavior. No-ops if the client was already removed
+  /// (e.g. via an explicit closeClient() kick).
+  void _handleClientGone(String clientId) {
+    if (_clients.remove(clientId) == null) return;
+    if (!_controller.isClosed) {
+      _controller.add(LanIncomingEvent(
+        clientId: clientId,
+        message: LanMessage.bye(clientId),
+      ));
+    }
   }
 
   void _safeSend(String clientId, WebSocket ws, String json) {
