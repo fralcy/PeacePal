@@ -187,6 +187,9 @@ class PaperShipWorld {
   static const double _collectiblePickupRadius = 56.0;
   static const double _collectibleSpawnInterval = 4.5;  // seconds between spawns
   static const double _collectibleGracePeriod = 1.0;    // keep col:true in payload
+  // Minimum world-space progress required between spawns, so a slow/stalled
+  // boat doesn't accumulate multiple collectibles in the same river segment.
+  static const double _collectibleMinSpawnDistanceFactor = 0.55; // × ch
 
   // HP / speed penalty
   static const double _hpCollisionDamage = 0.18;
@@ -262,6 +265,7 @@ class PaperShipWorld {
   int _itemsCollected = 0;
   int _collectibleIdCounter = 0;
   double _collectibleSpawnTimer = 0.0;
+  double _lastCollectibleSpawnDistance = 0.0;
 
   // ── HP / penalty ─────────────────────────────────────────
   double _boatHp = 1.0;
@@ -694,8 +698,11 @@ class PaperShipWorld {
 
   void _advanceCollectibles(double dt) {
     _collectibleSpawnTimer += dt;
-    if (_collectibleSpawnTimer >= _collectibleSpawnInterval) {
+    final distanceSinceLastSpawn = _distanceTraveled - _lastCollectibleSpawnDistance;
+    if (_collectibleSpawnTimer >= _collectibleSpawnInterval &&
+        distanceSinceLastSpawn >= ch * _collectibleMinSpawnDistanceFactor) {
       _collectibleSpawnTimer = 0.0;
+      _lastCollectibleSpawnDistance = _distanceTraveled;
       _spawnCollectible();
     }
     for (final c in _collectibles) {
