@@ -10,6 +10,7 @@ import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_typography.dart';
 import '../../core/l10n/app_localizations.dart';
 import '../../core/providers/game_room_provider.dart';
+import '../../core/providers/scene_provider.dart';
 import '../../core/utils/asset_loader.dart';
 import '../../core/utils/data_manager.dart';
 import '../../core/utils/lan/lan_service.dart';
@@ -907,7 +908,7 @@ class _FireflyModalState extends State<FireflyModal>
                   Positioned.fill(
                     child: Image.asset(
                       AssetLoader.getFireflyBgAsset(
-                        DataManager().userSettings.currentScenes[0].sceneSet,
+                        context.read<SceneProvider>().getCurrentSceneSet(),
                       ),
                       fit: BoxFit.cover,
                       errorBuilder: (_, e, s) => ColoredBox(color: theme.background),

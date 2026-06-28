@@ -89,7 +89,10 @@ class SyncService {
     if (localProfile.id != currentUser.uid) {
       await _dataManager.switchToLoggedInUser(
         userId: currentUser.uid,
-        email: currentUser.email!,
+        // Some sign-in providers (e.g. phone, anonymous) don't supply an
+        // email — fall back to the existing local profile's rather than
+        // force-unwrapping a value that can legitimately be null.
+        email: currentUser.email ?? localProfile.email,
         displayName: currentUser.displayName,
         hasCloudData: await _hasCloudData(),
       );
