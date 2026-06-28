@@ -60,6 +60,19 @@ class SleepGuideService {
     return current >= bedtime && current < wake;
   }
 
+  /// Returns true if bedtime is upcoming within [withinMinutes] but not yet
+  /// reached (use [isSleepTime] to check the already-at/past-bedtime window).
+  bool isApproachingBedtime(SleepSettings settings, {int withinMinutes = 30}) {
+    if (settings.bedtimeMinutes == null) return false;
+    final now = DateTime.now();
+    final currentMinutes = now.hour * 60 + now.minute;
+
+    final diff = settings.bedtimeMinutes! - currentMinutes;
+    final normalizedDiff = diff < -720 ? diff + 1440 : diff;
+
+    return normalizedDiff > 0 && normalizedDiff <= withinMinutes;
+  }
+
   /// Determine whether to suggest breathing exercise
   /// Returns true if within 60 min of bedtime or up to 2 hours past
   bool shouldSuggestBreathing(SleepSettings settings) {

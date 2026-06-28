@@ -37,6 +37,13 @@ class MascotDialogueService {
     return l10n.getMascotSleepDialogue(variant);
   }
 
+  /// Lấy dialogue nhắc nhở khi gần đến giờ ngủ (trong ngưỡng phút đã định,
+  /// trước khi tới giờ ngủ thật sự — xem [getSleepDialogue] cho lúc đã tới giờ)
+  String getApproachingBedtimeDialogue(AppLocalizations l10n) {
+    final pool = [l10n.sleepTipWindDown, l10n.sleepTipWindDown2, l10n.sleepTipWindDown3];
+    return pool[_random.nextInt(pool.length)];
+  }
+
   /// Lấy dialogue an ủi khi người dùng vừa ghi nhật ký tâm trạng thấp
   String getLowMoodDialogue(AppLocalizations l10n) {
     final variant = _random.nextBool() ? 0 : 1;

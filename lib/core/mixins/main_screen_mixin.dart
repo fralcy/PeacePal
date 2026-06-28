@@ -50,7 +50,23 @@ mixin MainScreenMixin<T extends StatefulWidget> on State<T> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       runRetroactiveCheck();
       if (mounted) setState(() => currentExpression = defaultExpression);
+      checkBedtimeApproaching();
     });
+  }
+
+  /// Shows a mascot reminder when the app is opened with bedtime coming up
+  /// within 30 minutes (and not yet reached — see [defaultExpression] for
+  /// the already-at/past-bedtime case).
+  void checkBedtimeApproaching() {
+    if (!mounted) return;
+    final settings = DataManager().sleepSettings;
+    if (SleepGuideService().isApproachingBedtime(settings)) {
+      final l10n = AppLocalizations.of(context);
+      showDialogue(
+        dialogueService.getApproachingBedtimeDialogue(l10n),
+        MascotExpression.sleepy,
+      );
+    }
   }
 
   void disposeMainScreen() {
