@@ -62,6 +62,11 @@ class SceneShopModal extends StatefulWidget {
 }
 
 class _SceneShopModalState extends State<SceneShopModal> {
+  // Guards against double-spend from rapid double-taps — SceneShopService
+  // is re-instantiated per call, so its own _isPurchasing flag doesn't
+  // persist across taps. This widget-level flag does.
+  bool _isProcessing = false;
+
   @override
   Widget build(BuildContext context) {
     final theme = context.theme;
@@ -248,13 +253,15 @@ class _SceneShopModalState extends State<SceneShopModal> {
         icon: Icons.shopping_cart,
         label: collection.isFree ? l10n.free : l10n.buyCollection,
         onPressed: () => _handlePurchaseCollection(collection),
-        isDisabled: !collection.canAfford && !collection.isFree,
+        isDisabled: _isProcessing || (!collection.canAfford && !collection.isFree),
         width: double.infinity,
       );
     }
   }
 
   Future<void> _handlePurchaseCollection(SceneCollectionInfo collection) async {
+    if (_isProcessing) return;
+    setState(() => _isProcessing = true);
     final l10n = AppLocalizations.of(context);
     try {
       final sceneProvider = Provider.of<SceneProvider>(context, listen: false);
@@ -279,10 +286,14 @@ class _SceneShopModalState extends State<SceneShopModal> {
           backgroundColor: Colors.red.shade700,
         ),
       );
+    } finally {
+      if (mounted) setState(() => _isProcessing = false);
     }
   }
 
   Future<void> _handleUseCollection(SceneCollectionInfo collection) async {
+    if (_isProcessing) return;
+    setState(() => _isProcessing = true);
     final l10n = AppLocalizations.of(context);
     try {
       final sceneProvider = Provider.of<SceneProvider>(context, listen: false);
@@ -301,6 +312,8 @@ class _SceneShopModalState extends State<SceneShopModal> {
           backgroundColor: Colors.red.shade700,
         ),
       );
+    } finally {
+      if (mounted) setState(() => _isProcessing = false);
     }
   }
 }
