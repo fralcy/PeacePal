@@ -9,9 +9,12 @@ import '../core/mixins/main_screen_mixin.dart';
 import '../core/widgets/app_button.dart';
 import '../core/widgets/mascot_sprite_widget.dart';
 import '../core/widgets/speech_bubble.dart';
+import '../core/providers/achievement_provider.dart';
 import '../core/providers/scene_provider.dart';
 import '../core/providers/score_provider.dart';
+import '../core/utils/display_item_service.dart';
 import '../core/utils/sfx_service.dart';
+import '../core/widgets/scene_display_item_widget.dart';
 import '../core/l10n/app_localizations.dart';
 import '../models/scene_models.dart';
 import 'modals/profile_modal.dart';
@@ -215,6 +218,12 @@ class _DesktopLandscapeScreenState extends State<DesktopLandscapeScreen>
     return Consumer<SceneProvider>(
       builder: (context, sceneProvider, _) {
         final sceneAssetPath = sceneProvider.getCurrentSceneAsset(currentScene);
+        final sceneSet = sceneProvider.currentScenes.length > currentScene.index
+            ? sceneProvider.currentScenes[currentScene.index].sceneSet
+            : sceneProvider.getCurrentSceneSet();
+        final progress = context.watch<AchievementProvider>().progress;
+        final displayItems = DisplayItemService.getItemsForScene(currentScene, sceneSet, progress);
+        final itemSize = sceneSize * 0.16;
 
         return SizedBox(
           width: sceneSize,
@@ -248,6 +257,18 @@ class _DesktopLandscapeScreenState extends State<DesktopLandscapeScreen>
                   ),
                 ),
               ),
+
+              // Display items (achievement rewards)
+              for (final item in displayItems)
+                Positioned(
+                  left: item.position.dx * sceneSize - itemSize / 2,
+                  top: item.position.dy * sceneSize - itemSize / 2,
+                  child: SceneDisplayItemWidget(
+                    key: ValueKey(item.id),
+                    data: item,
+                    size: itemSize,
+                  ),
+                ),
 
               // Speech bubble
               if (currentDialogue != null)
