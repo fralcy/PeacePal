@@ -106,6 +106,13 @@ class FireflyLobbyModal extends StatefulWidget {
 }
 
 class _FireflyLobbyModalState extends State<FireflyLobbyModal> {
+  // Cached once — LanProvider.roomStream creates a brand-new RTDB
+  // subscription on every access, so reading it directly in build()
+  // would resubscribe (and flicker back to "scanning...") on every rebuild.
+  Stream<List<LanHostInfo>>? _roomStreamCache;
+  Stream<List<LanHostInfo>> get _roomStream =>
+      _roomStreamCache ??= context.read<LanProvider>().roomStream;
+
   // ── Tutorial keys ────────────────────────────────────────
   final GlobalKey _sliderKey = GlobalKey();
   final GlobalKey _createJoinKey = GlobalKey();
@@ -479,7 +486,14 @@ class _FireflyLobbyModalState extends State<FireflyLobbyModal> {
     if (!mounted) return;
 
     final hosts = lan.discoveredHosts;
-    if (hosts.isEmpty && !kIsWeb) {
+    if (lan.errorMessage != null) {
+      // Surface scan failures (e.g. RTDB permission errors on web) instead
+      // of silently presenting them as "no rooms found".
+      setState(() {
+        _state = _LobbyState.error;
+        _errorMessage = lan.errorMessage;
+      });
+    } else if (hosts.isEmpty && !kIsWeb) {
       setState(() {
         _state = _LobbyState.idle;
         _errorMessage = AppLocalizations.of(context).lanNotConnected;
@@ -833,7 +847,6 @@ class _FireflyLobbyModalState extends State<FireflyLobbyModal> {
   }
 
   Widget _buildWebScanResults(AppTheme theme, AppLocalizations l10n) {
-    final lan = context.read<LanProvider>();
     return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -843,7 +856,7 @@ class _FireflyLobbyModalState extends State<FireflyLobbyModal> {
                   color: theme.text, fontWeight: FontWeight.bold)),
           const SizedBox(height: 8),
           StreamBuilder<List<LanHostInfo>>(
-            stream: lan.roomStream,
+            stream: _roomStream,
             builder: (context, snapshot) {
               final hosts = snapshot.data ?? _discoveredHosts;
               if (hosts.isEmpty) {
