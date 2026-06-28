@@ -84,6 +84,11 @@ class _ScheduleTaskModalState extends State<ScheduleTaskModal> {
 
   // Debug mode state
   bool _isDebugMode = false;
+
+  // Guards _claimPoints against double-tap re-entrancy (the button's
+  // isDisabled check uses state that isn't updated until the claim
+  // finishes, so a rapid second tap could otherwise award points twice).
+  bool _isClaiming = false;
   final AuthService _authService = AuthService();
 
   @override
@@ -206,47 +211,53 @@ class _ScheduleTaskModalState extends State<ScheduleTaskModal> {
   }
 
   Future<void> _claimPoints() async {
-    // Lấy profile từ provider
-    final profile = context.read<ScoreProvider>().profile;
-    final tasks = DataManager().scheduleTasks;
+    if (_isClaiming) return;
+    _isClaiming = true;
+    try {
+      // Lấy profile từ provider
+      final profile = context.read<ScoreProvider>().profile;
+      final tasks = DataManager().scheduleTasks;
 
-    // Check đã claim hôm nay chưa (bypass in debug mode)
-    if (!_isDebugMode && !ScheduleTaskService.canClaimToday(profile.lastPointsClaimDate)) {
-      SfxService().error();
-      return;
+      // Check đã claim hôm nay chưa (bypass in debug mode)
+      if (!_isDebugMode && !ScheduleTaskService.canClaimToday(profile.lastPointsClaimDate)) {
+        SfxService().error();
+        return;
+      }
+
+      // Tính điểm từ completed tasks
+      final points = ScheduleTaskService.calculatePoints(tasks);
+      if (points == 0) {
+        SfxService().error();
+        return;
+      }
+
+      // Cộng điểm qua provider ← KEY!
+      await context.read<ScoreProvider>().addPoints(points);
+
+      // Update last claim date (skip in debug mode to allow multiple claims)
+      if (!_isDebugMode) {
+        await context.read<ScoreProvider>().updateLastClaimDate(DateTime.now());
+      }
+
+      // Achievement trigger — count completed tasks at claim time
+      if (mounted) {
+        final completedCount = tasks.where((t) => t.isCompleted).length;
+        final score = context.read<ScoreProvider>();
+        final newly = await context
+            .read<AchievementProvider>()
+            .onScheduleClaimed(completedCount, score);
+        if (newly.isNotEmpty && mounted) AchievementPopup.show(context, newly);
+      }
+
+      // Xử lý tasks: xóa completed non-daily, reset completed daily
+      final processedTasks = ScheduleTaskService.processTasksAfterClaim(tasks);
+      await DataManager().saveScheduleTasks(processedTasks);
+
+      SfxService().reward();
+      _loadTasks();
+    } finally {
+      _isClaiming = false;
     }
-
-    // Tính điểm từ completed tasks
-    final points = ScheduleTaskService.calculatePoints(tasks);
-    if (points == 0) {
-      SfxService().error();
-      return;
-    }
-
-    // Cộng điểm qua provider ← KEY!
-    await context.read<ScoreProvider>().addPoints(points);
-
-    // Update last claim date (skip in debug mode to allow multiple claims)
-    if (!_isDebugMode) {
-      await context.read<ScoreProvider>().updateLastClaimDate(DateTime.now());
-    }
-
-    // Achievement trigger — count completed tasks at claim time
-    if (mounted) {
-      final completedCount = tasks.where((t) => t.isCompleted).length;
-      final score = context.read<ScoreProvider>();
-      final newly = await context
-          .read<AchievementProvider>()
-          .onScheduleClaimed(completedCount, score);
-      if (newly.isNotEmpty && mounted) AchievementPopup.show(context, newly);
-    }
-
-    // Xử lý tasks: xóa completed non-daily, reset completed daily
-    final processedTasks = ScheduleTaskService.processTasksAfterClaim(tasks);
-    await DataManager().saveScheduleTasks(processedTasks);
-
-    SfxService().reward();
-    _loadTasks();
   }
 
   Future<void> _debugTriggerTaskNotification(int index) async {
