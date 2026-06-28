@@ -169,6 +169,7 @@ class Notifier {
     required ScheduleTask task,
     required int taskIndex,
   }) async {
+    if (!await requestPermissions()) return;
     _show(
       title: '⚡ [DEBUG] Task Notification',
       body: '${task.title} - Test notification',
@@ -177,6 +178,7 @@ class Notifier {
   }
 
   static Future<void> debugScheduleDefaultNotification() async {
+    if (!await requestPermissions()) return;
     _show(
       title: '⚡ [DEBUG] Test Notification',
       body: 'This is an instant test notification!',
@@ -185,6 +187,7 @@ class Notifier {
   }
 
   static Future<void> debugScheduleSleepNotification() async {
+    if (!await requestPermissions()) return;
     _show(
       title: '⚡ [DEBUG] Sleep Reminder',
       body: 'Đã đến giờ đi ngủ! 😴 (test notification)',
