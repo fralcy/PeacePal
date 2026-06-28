@@ -139,12 +139,7 @@ class _EmotionDiaryModalState extends State<EmotionDiaryModal> {
     return DateTime(now.year, now.month, now.day).subtract(Duration(days: dataIdx));
   }
 
-  bool _isToday(int dataIdx) => dataIdx == 0;
-
-  bool _canEdit(int dataIdx) {
-    if (_isDebugMode) return true;
-    return _isToday(dataIdx);
-  }
+  bool _canEdit(int dataIdx) => true;
 
   bool _isSameDay(DateTime a, DateTime b) =>
       a.year == b.year && a.month == b.month && a.day == b.day;

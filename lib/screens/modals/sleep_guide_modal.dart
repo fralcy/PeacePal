@@ -169,8 +169,7 @@ class _SleepGuideModalState extends State<SleepGuideModal> {
         .subtract(Duration(days: index));
   }
 
-  /// Only today (0) is editable (all days in debug mode)
-  bool _canEdit(int dataIdx) => _isDebugMode || dataIdx == 0;
+  bool _canEdit(int dataIdx) => true;
 
   SleepLog? _logFor(int dataIdx) {
     final target = _dateFor(dataIdx);
