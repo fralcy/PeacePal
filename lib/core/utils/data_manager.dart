@@ -1,6 +1,5 @@
 import 'dart:math';
 import '../../models/index.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:hive_flutter/hive_flutter.dart';
 import 'auth_service.dart';
 import 'encryption_util.dart';
@@ -130,14 +129,14 @@ class DataManager {
     _isInitialized = true;
   }
   
-  /// Generate a unique session ID for web users who are not logged in.
-  /// On web, Hive uses IndexedDB which is isolated per browser context
-  /// (normal vs incognito), so this ID is stable within a session but
-  /// unique across different browser contexts — preventing player ID
-  /// collisions in WebRTC multiplayer.
-  static String _generateWebUserId() {
+  /// Generate a unique ID for non-logged-in users (first launch, guest,
+  /// debug). Stored once in the local Hive profile and reused on every
+  /// subsequent launch, so it stays stable per install while remaining
+  /// unique across devices — preventing player ID collisions when two
+  /// non-logged-in users join the same LAN/WebRTC multiplayer room.
+  static String _generateUniqueUserId() {
     final suffix = Random().nextInt(999999999).toRadixString(36);
-    return 'web_${DateTime.now().millisecondsSinceEpoch.toRadixString(36)}_$suffix';
+    return 'user_${DateTime.now().millisecondsSinceEpoch.toRadixString(36)}_$suffix';
   }
 
   /// Initialize user data based on current mode (first_launch/guest/logged_in)
@@ -151,7 +150,7 @@ class DataManager {
       switch (userMode) {
         case 'first_launch':
           defaultProfile = UserProfile.initial(
-            id: kIsWeb ? _generateWebUserId() : 'initial_user',
+            id: 'initial_user',
             username: 'new_user',
             email: 'initial@example.com',
             name: 'Player',
@@ -159,7 +158,7 @@ class DataManager {
           break;
         case 'guest':
           defaultProfile = UserProfile.initial(
-            id: kIsWeb ? _generateWebUserId() : 'guest_user',
+            id: _generateUniqueUserId(),
             username: 'guest',
             email: 'guest@example.com',
             name: 'Player',
@@ -167,7 +166,7 @@ class DataManager {
           break;
         case 'debug':
           defaultProfile = UserProfile.initial(
-            id: kIsWeb ? _generateWebUserId() : 'debug_user',
+            id: _generateUniqueUserId(),
             username: 'debug',
             email: 'debug@example.com',
             name: 'Player',
