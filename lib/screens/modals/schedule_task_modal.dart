@@ -36,10 +36,12 @@ class ScheduleTaskModal extends StatefulWidget {
     if (size.width >= 720 && size.width > size.height && size.height >= 600) {
       return _showLandscape(context, hasOverlap: hasOverlap);
     }
+    final h = size.height * 0.92;
     return AppModal.show(
       context: context,
       title: hasOverlap ? '⚠️ ${l10n.scheduleTask}' : l10n.scheduleTask,
-      maxHeight: size.height * 0.92,
+      maxHeight: h,
+      minHeight: h,
       content: const ScheduleTaskModal(),
     );
   }
